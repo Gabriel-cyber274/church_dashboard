@@ -54,4 +54,30 @@ class User extends Authenticatable
             ->withTimestamps()
             ->withPivot('created_at', 'updated_at');
     }
+
+
+    public function hasRole(string $role): bool
+    {
+        return $this->roles()->where('name', $role)->exists();
+    }
+
+    public function hasAnyRole(array $roles): bool
+    {
+        return $this->roles()->whereIn('name', $roles)->exists();
+    }
+
+    public function isSuperAdmin(): bool
+    {
+        return $this->hasRole('super_admin');
+    }
+
+    public function doesntHaveRole(string $role): bool
+    {
+        return ! $this->hasRole($role);
+    }
+
+    public function doesntHaveAnyRole(array $roles): bool
+    {
+        return ! $this->hasAnyRole($roles);
+    }
 }

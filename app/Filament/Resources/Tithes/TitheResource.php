@@ -27,6 +27,16 @@ class TitheResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'amount';
 
+    public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->check() && auth()->user()->hasAnyRole([
+            'super_admin',
+            'admin',
+        ]);
+    }
+
+
+
     public static function form(Schema $schema): Schema
     {
         return TitheForm::configure($schema);

@@ -19,6 +19,7 @@ use Filament\Forms\Components\TimePicker;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -28,7 +29,7 @@ class AttendeesRelationManager extends RelationManager
 {
     protected static string $relationship = 'attendees';
 
-    protected static ?string $relatedResource = null; // we will handle form inline
+    protected static ?string $relatedResource = null;
 
     protected static ?string $title = 'Programme Attendees';
 
@@ -45,7 +46,6 @@ class AttendeesRelationManager extends RelationManager
                 CreateAction::make('createAttendee')
                     ->modalHeading(fn() => 'Add Attendee for ' . $this->getOwnerRecord()->name)
                     ->form([
-                        // program_id is hidden and prefilled
                         Select::make('program_id')
                             ->default(fn() => $this->getOwnerRecord()->id)
                             ->hidden(),
@@ -69,7 +69,28 @@ class AttendeesRelationManager extends RelationManager
                             ->getOptionLabelUsing(function ($value): ?string {
                                 $member = \App\Models\Member::find($value);
                                 return $member ? "{$member->first_name} {$member->last_name} ({$member->email}, {$member->phone_number})" : null;
-                            }),
+                            })
+                            // Add validation to prevent duplicate entries
+                            ->rules([
+                                function () {
+                                    return function (string $attribute, $value, \Closure $fail) {
+                                        if ($value) {
+                                            $programId = $this->getOwnerRecord()->id;
+
+                                            // Check if this member is already registered for this program
+                                            $exists = ProgrammeAttendee::where('program_id', $programId)
+                                                ->where('member_id', $value)
+                                                ->exists();
+
+                                            if ($exists) {
+                                                $member = \App\Models\Member::find($value);
+                                                $memberName = $member ? $member->first_name . ' ' . $member->last_name : 'This member';
+                                                $fail("{$memberName} is already registered for this program.");
+                                            }
+                                        }
+                                    };
+                                },
+                            ]),
 
                         TimePicker::make('attendance_time')
                             ->required(),
@@ -82,30 +103,37 @@ class AttendeesRelationManager extends RelationManager
                             ->default(null),
                     ])
                     ->action(function ($data) {
-                        // create attendee for this program
+                        // Check for duplicate before creating
+                        if (isset($data['member_id']) && $data['member_id']) {
+                            $exists = ProgrammeAttendee::where('program_id', $data['program_id'])
+                                ->where('member_id', $data['member_id'])
+                                ->exists();
+
+                            if ($exists) {
+                                throw new \Exception('This member is already registered for this program.');
+                            }
+                        }
+
                         $this->getOwnerRecord()->attendees()->create($data);
                     }),
             ])
             ->filters([
-                Filter::make('attendance_time')
-                    ->form([
-                        TimePicker::make('from')
-                            ->label('From time'),
-                        TimePicker::make('until')
-                            ->label('Until time'),
+                SelectFilter::make('member_type')
+                    ->label('Attendee Type')
+                    ->options([
+                        'members' => 'Members Only',
+                        'guests' => 'Guests Only',
                     ])
                     ->query(function (Builder $query, array $data): Builder {
-                        return $query
-                            ->when(
-                                $data['from'],
-                                fn(Builder $query, $time) =>
-                                $query->whereTime('attendance_time', '>=', $time),
-                            )
-                            ->when(
-                                $data['until'],
-                                fn(Builder $query, $time) =>
-                                $query->whereTime('attendance_time', '<=', $time),
-                            );
+                        if (empty($data['value'])) {
+                            return $query;
+                        }
+
+                        return match ($data['value']) {
+                            'members' => $query->whereNotNull('member_id'),
+                            'guests' => $query->whereNull('member_id'),
+                            default => $query,
+                        };
                     }),
 
                 TrashedFilter::make(),
@@ -117,6 +145,8 @@ class AttendeesRelationManager extends RelationManager
                     ->form([
                         Select::make('member_id')
                             ->label('Member')
+                            ->disabled() // Disable editing of member_id to prevent duplicate constraint violation
+                            ->dehydrated() // Still send the value when disabled
                             ->searchable()
                             ->getSearchResultsUsing(function (string $search) {
                                 return \App\Models\Member::query()
@@ -145,7 +175,17 @@ class AttendeesRelationManager extends RelationManager
                             ->label('Guest Phone')
                             ->tel()
                             ->default(null),
-                    ]),
+                    ])
+                    ->action(function ($data, ProgrammeAttendee $record) {
+                        try {
+                            $record->update($data);
+                        } catch (\Illuminate\Database\QueryException $e) {
+                            if (str_contains($e->getMessage(), 'Duplicate entry')) {
+                                throw new \Exception('This member is already registered for this program. Please choose a different member or delete the existing registration first.');
+                            }
+                            throw $e;
+                        }
+                    }),
                 DeleteAction::make(),
                 RestoreAction::make(),
                 ForceDeleteAction::make(),

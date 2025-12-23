@@ -2,27 +2,133 @@
 
 namespace App\Filament\Resources\Projects\RelationManagers;
 
-use App\Filament\Resources\Banks\BankResource;
-use App\Filament\Resources\Deposits\DepositResource;
-use App\Filament\Resources\Members\MemberResource;
-use App\Filament\Resources\Programs\ProgramResource;
-use App\Filament\Resources\Roles\RoleResource;
-use App\Filament\Resources\Users\UserResource;
 use App\Filament\Resources\Withdrawals\WithdrawalResource;
+use App\Models\Withdrawal;
 use Filament\Actions\CreateAction;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ForceDeleteAction;
+use Filament\Actions\ForceDeleteBulkAction;
+use Filament\Actions\RestoreAction;
+use Filament\Actions\RestoreBulkAction;
+use Filament\Actions\ViewAction;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Filament\Actions\BulkActionGroup;
+use Illuminate\Database\Eloquent\Model;
+
 
 class WithdrawalsRelationManager extends RelationManager
 {
     protected static string $relationship = 'withdrawals';
 
-    protected static ?string $relatedResource = WithdrawalResource::class;
+    protected static ?string $relatedResource = null; // we will handle form inline
+
+    public static function canViewForRecord(Model $ownerRecord, string $pageClass): bool
+    {
+        return auth()->check() && auth()->user()->hasAnyRole([
+            'super_admin',
+            'admin',
+        ]);
+    }
+
     public function table(Table $table): Table
     {
         return $table
+            ->columns([
+                TextColumn::make('amount'),
+                TextColumn::make('withdrawal_date')->date(),
+                TextColumn::make('description'),
+                TextColumn::make('program.name')->label('Program'),
+            ])
             ->headerActions([
-                CreateAction::make(),
+                CreateAction::make('createWithdrawal')
+                    ->modalHeading(fn() => 'Add Withdrawal for ' . $this->getOwnerRecord()->name)
+                    ->form([
+                        // project_id is hidden and prefilled
+                        Select::make('project_id')
+                            ->default(fn() => $this->getOwnerRecord()->id)
+                            ->hidden(),
+
+                        Select::make('program_id')
+                            ->label('Program')
+                            ->options(\App\Models\Program::all()->pluck('name', 'id'))
+                            ->searchable(),
+
+                        TextInput::make('amount')
+                            ->required()
+                            ->numeric(),
+                        DatePicker::make('withdrawal_date')
+                            ->required(),
+                        Textarea::make('description')
+                            ->default(null),
+                    ])
+                    ->action(function ($data) {
+                        // create withdrawal for this project
+                        $this->getOwnerRecord()->withdrawals()->create($data);
+                    }),
+            ])
+            ->filters([
+                Filter::make('withdrawal_date')
+                    ->form([
+                        DatePicker::make('from')
+                            ->label('From date'),
+                        DatePicker::make('until')
+                            ->label('Until date'),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['from'],
+                                fn(Builder $query, $date) =>
+                                $query->whereDate('withdrawal_date', '>=', $date),
+                            )
+                            ->when(
+                                $data['until'],
+                                fn(Builder $query, $date) =>
+                                $query->whereDate('withdrawal_date', '<=', $date),
+                            );
+                    }),
+
+                TrashedFilter::make(),
+            ])
+            ->recordActions([
+                ViewAction::make()
+                    ->url(fn(Withdrawal $record): string => WithdrawalResource::getUrl('view', ['record' => $record])),
+                EditAction::make()
+                    ->form([
+                        Select::make('program_id')
+                            ->label('Program')
+                            ->options(\App\Models\Program::all()->pluck('name', 'id'))
+                            ->searchable(),
+
+                        TextInput::make('amount')
+                            ->required()
+                            ->numeric(),
+                        DatePicker::make('withdrawal_date')
+                            ->required(),
+                        Textarea::make('description')
+                            ->default(null),
+                    ]),
+                DeleteAction::make(),
+                RestoreAction::make(),
+                ForceDeleteAction::make(),
+            ])
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                    ForceDeleteBulkAction::make(),
+                    RestoreBulkAction::make(),
+                ]),
             ]);
     }
 }

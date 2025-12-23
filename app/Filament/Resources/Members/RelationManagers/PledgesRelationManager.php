@@ -30,12 +30,23 @@ use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Filters\Filter;
 use Illuminate\Database\Eloquent\Builder;
 
+use Illuminate\Database\Eloquent\Model;
+
 
 class PledgesRelationManager extends RelationManager
 {
     protected static string $relationship = 'pledges';
 
     protected static ?string $relatedResource = null; // we will handle form inline
+
+    public static function canViewForRecord(Model $ownerRecord, string $pageClass): bool
+    {
+        return auth()->check() && auth()->user()->hasAnyRole([
+            'super_admin',
+            'admin',
+        ]);
+    }
+
 
     public function table(Table $table): Table
     {

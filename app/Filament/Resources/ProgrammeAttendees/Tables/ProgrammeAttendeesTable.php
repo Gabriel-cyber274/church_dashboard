@@ -14,29 +14,28 @@ use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class ProgrammeAttendeesTable
 {
     public static function configure(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(function (Builder $query) {
+                // Always filter to show only non-members (guests)
+                return $query->whereNull('member_id');
+            })
             ->columns([
-                // TextColumn::make('program_id')
-                //     ->numeric()
-                //     ->sortable(),
-                // TextColumn::make('member_id')
-                //     ->numeric()
-                //     ->sortable(),
-                TextColumn::make('member.full_name')->label('Member')->sortable(),
-
+                // Remove the member column since we're only showing guests
                 TextColumn::make('program.name')->label('Program')->sortable(),
-                
                 TextColumn::make('attendance_time')
                     ->time()
                     ->sortable(),
                 TextColumn::make('name')
+                    ->label('Guest Name') // Updated label since we only have guests
                     ->searchable(),
                 TextColumn::make('phone_number')
+                    ->label('Guest Phone') // Updated label since we only have guests
                     ->searchable(),
                 TextColumn::make('created_at')
                     ->dateTime()

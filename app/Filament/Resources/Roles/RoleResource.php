@@ -27,6 +27,15 @@ class RoleResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'name';
 
+    public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->check() && auth()->user()->hasAnyRole([
+            'super_admin',
+        ]);
+    }
+
+
+
     public static function form(Schema $schema): Schema
     {
         return RoleForm::configure($schema);

@@ -28,13 +28,23 @@ use Filament\Tables\Filters\TrashedFilter;
 
 use Filament\Tables\Filters\Filter;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
+
 
 class DepositsRelationManager extends RelationManager
 {
     protected static string $relationship = 'deposits';
 
-    // protected static ?string $relatedResource = DepositResource::class;
     protected static ?string $relatedResource = null;
+
+
+    public static function canViewForRecord(Model $ownerRecord, string $pageClass): bool
+    {
+        return auth()->check() && auth()->user()->hasAnyRole([
+            'super_admin',
+            'admin',
+        ]);
+    }
 
 
     public function table(Table $table): Table

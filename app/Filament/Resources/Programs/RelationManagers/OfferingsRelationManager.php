@@ -24,11 +24,22 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Actions\BulkActionGroup;
 
+use Illuminate\Database\Eloquent\Model;
+
+
 class OfferingsRelationManager extends RelationManager
 {
     protected static string $relationship = 'offerings';
 
     protected static ?string $relatedResource = null; // we will handle form inline
+
+    public static function canViewForRecord(Model $ownerRecord, string $pageClass): bool
+    {
+        return auth()->check() && auth()->user()->hasAnyRole([
+            'super_admin',
+            'admin',
+        ]);
+    }
 
     public function table(Table $table): Table
     {

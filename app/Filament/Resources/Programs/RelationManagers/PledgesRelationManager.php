@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Programs\RelationManagers;
 
 use App\Filament\Resources\Pledges\PledgeResource;
+use App\Filament\Resources\Programs\Widgets\ProgramPledgeStats;
 use App\Models\Pledge;
 use App\Models\Project;
 use Filament\Actions\CreateAction;
@@ -27,12 +28,24 @@ use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Filters\Filter;
 use Illuminate\Database\Eloquent\Builder;
 
+use Illuminate\Database\Eloquent\Model;
+
 
 class PledgesRelationManager extends RelationManager
 {
     protected static string $relationship = 'pledges';
 
     protected static ?string $relatedResource = null; // we will handle form inline
+
+
+    public static function canViewForRecord(Model $ownerRecord, string $pageClass): bool
+    {
+        return auth()->check() && auth()->user()->hasAnyRole([
+            'super_admin',
+            'admin',
+        ]);
+    }
+
 
     public function table(Table $table): Table
     {

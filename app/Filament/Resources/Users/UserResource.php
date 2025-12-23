@@ -28,6 +28,14 @@ class UserResource extends Resource
 
     protected static ?string $navigationLabel = 'Admins';
 
+    public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->check() && auth()->user()->hasAnyRole([
+            'super_admin',
+        ]);
+    }
+
+
 
     public static function form(Schema $schema): Schema
     {

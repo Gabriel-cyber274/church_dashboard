@@ -26,7 +26,10 @@ class ProgrammeAttendeeResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'program_id';
 
-    protected static bool $shouldRegisterNavigation = false;
+
+    protected static ?string $navigationLabel = 'Non-Members';
+
+    // protected static bool $shouldRegisterNavigation = false;
 
 
     public static function form(Schema $schema): Schema
