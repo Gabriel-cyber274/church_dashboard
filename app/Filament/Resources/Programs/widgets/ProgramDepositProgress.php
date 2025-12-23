@@ -13,7 +13,7 @@ class ProgramDepositProgress extends BaseWidget
 
     protected ?string $pollingInterval = '10s';
 
-    
+
 
     protected function getStats(): array
     {

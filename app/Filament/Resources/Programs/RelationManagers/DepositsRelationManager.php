@@ -33,6 +33,7 @@ class DepositsRelationManager extends RelationManager
 
     protected static ?string $relatedResource = null; // we will handle form inline
 
+
     public static function canViewForRecord(Model $ownerRecord, string $pageClass): bool
     {
         return auth()->check() && auth()->user()->hasAnyRole([
