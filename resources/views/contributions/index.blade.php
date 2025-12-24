@@ -4,37 +4,6 @@
     <div class="container">
         <h1 class="mb-5 text-center">Contribution Opportunities</h1>
 
-        @if ($projects->isNotEmpty())
-            <section class="mb-5">
-                <h2 class="section-title">Projects</h2>
-                <p class="text-muted mb-4">Ongoing projects that need your support</p>
-
-                <div class="row">
-                    @foreach ($projects as $project)
-                        <div class="col-lg-4 col-md-6 mb-4">
-                            <div class="card project-card">
-                                <div class="card-body">
-                                    <h5 class="mb-2">{{ $project->name }}</h5>
-                                    <p class="text-muted mb-3">{{ Str::limit($project->description, 120) }}</p>
-
-                                    <div class="mb-3">
-                                        <div class="budget-badge">
-                                            ₦{{ number_format($project->budget, 2) }}
-                                        </div>
-                                    </div>
-
-                                    <a href="{{ route('contributions.project.show', $project) }}"
-                                        class="btn btn-primary mt-auto">
-                                        View Banking Details →
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-            </section>
-        @endif
-
         @if ($programs->isNotEmpty())
             <section>
                 <h2 class="section-title">Programs</h2>
@@ -44,6 +13,10 @@
                     @foreach ($programs as $program)
                         <div class="col-lg-4 col-md-6 mb-4">
                             <div class="card project-card">
+                                @if ($program->flier_url)
+                                    <img src="{{ $program->flier_url }}" class="card-img-top" alt="{{ $program->name }} flier"
+                                        style="max-height: 200px; object-fit: cover;">
+                                @endif
                                 <div class="card-body">
                                     <h5 class="mb-2">{{ $program->name }}</h5>
                                     <p class="text-muted mb-3">{{ Str::limit($program->description, 120) }}</p>
@@ -67,6 +40,43 @@
                 </div>
             </section>
         @endif
+
+        @if ($projects->isNotEmpty())
+            <section class="mb-5">
+                <h2 class="section-title">Projects</h2>
+                <p class="text-muted mb-4">Ongoing projects that need your support</p>
+
+                <div class="row">
+                    @foreach ($projects as $project)
+                        <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="card project-card">
+                                @if ($project->flier_url)
+                                    <img src="{{ $project->flier_url }}" class="card-img-top"
+                                        alt="{{ $project->name }} flier" style="max-height: 200px; object-fit: cover;">
+                                @endif
+                                <div class="card-body">
+                                    <h5 class="mb-2">{{ $project->name }}</h5>
+                                    <p class="text-muted mb-3">{{ Str::limit($project->description, 120) }}</p>
+
+                                    <div class="mb-3">
+                                        <div class="budget-badge">
+                                            ₦{{ number_format($project->budget, 2) }}
+                                        </div>
+                                    </div>
+
+                                    <a href="{{ route('contributions.project.show', $project) }}"
+                                        class="btn btn-primary mt-auto">
+                                        View Banking Details →
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </section>
+        @endif
+
+
 
         @if ($projects->isEmpty() && $programs->isEmpty())
             <div class="text-center py-5">

@@ -174,6 +174,32 @@
                 min-width: 140px;
             }
         }
+
+
+        .project-card img {
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .project-card .card-body {
+            padding: 1.25rem;
+        }
+
+        /* Make the entire card clickable */
+        .project-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .project-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
     </style>
 </head>
 

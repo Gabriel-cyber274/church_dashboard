@@ -7,6 +7,15 @@
                 <div class="mb-4">
                     <h2>{{ $program->name }}</h2>
                     <p class="lead text-muted">{{ $program->description }}</p>
+
+                    @if ($program->flier_url)
+                        <div class="my-4">
+                            <h5>Program Flier</h5>
+                            <img src="{{ $program->flier_url }}" class="img-fluid rounded" alt="{{ $program->name }} flier"
+                                style="max-height: 400px;">
+                        </div>
+                    @endif
+
                     <div class="budget-badge mt-2">
                         Budget: ₦{{ number_format($program->budget, 2) }}
                     </div>

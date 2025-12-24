@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\MemberController;
 use App\Http\Controllers\PublicContributionController;
 use Illuminate\Support\Facades\Route;
 
@@ -32,3 +33,9 @@ Route::get('/contributions/confirm', [PublicContributionController::class, 'show
 // Process confirmation
 Route::post('/contributions/confirm', [PublicContributionController::class, 'confirm'])
     ->name('contributions.confirm');
+
+
+
+
+Route::get('/members/create', [MemberController::class, 'create'])->name('members.create');
+Route::post('/members', [MemberController::class, 'store'])->name('members.store');
