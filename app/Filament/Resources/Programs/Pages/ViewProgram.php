@@ -23,7 +23,7 @@ class ViewProgram extends ViewRecord
             EditAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
                 'super_admin',
                 'admin',
-                'pastors'
+                'finance',
             ])),
         ];
     }

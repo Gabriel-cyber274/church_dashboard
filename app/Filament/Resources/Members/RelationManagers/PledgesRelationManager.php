@@ -44,6 +44,7 @@ class PledgesRelationManager extends RelationManager
         return auth()->check() && auth()->user()->hasAnyRole([
             'super_admin',
             'admin',
+            'finance'
         ]);
     }
 
@@ -51,6 +52,7 @@ class PledgesRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
+            ->defaultSort('pledges.id', 'desc')
             ->columns([
                 TextColumn::make('amount'),
                 TextColumn::make('pledge_date')->date(),
@@ -59,7 +61,10 @@ class PledgesRelationManager extends RelationManager
                 TextColumn::make('project.name')->label('Project'),
             ])
             ->headerActions([
-                CreateAction::make('createPledge')
+                CreateAction::make('createPledge')->visible(fn() => auth()->user()?->hasAnyRole([
+                    'super_admin',
+                    'finance',
+                ]))
                     ->modalHeading(fn() => 'Add Pledge for ' . $this->getOwnerRecord()->full_name)
                     ->form([
                         // member_id is hidden and prefilled
@@ -141,9 +146,16 @@ class PledgesRelationManager extends RelationManager
             ->recordActions([
                 ViewAction::make()
                     ->url(fn(Pledge $record): string => PledgeResource::getUrl('view', ['record' => $record])),
-                DeleteAction::make(),
-                RestoreAction::make(),
-                ForceDeleteAction::make(),
+                DeleteAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
+                    'super_admin',
+                    'finance',
+                ])),
+                RestoreAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
+                    'super_admin',
+                ])),
+                ForceDeleteAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
+                    'super_admin',
+                ])),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

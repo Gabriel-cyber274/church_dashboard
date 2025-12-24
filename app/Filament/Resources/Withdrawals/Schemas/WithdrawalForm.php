@@ -30,6 +30,21 @@ class WithdrawalForm
                 TextInput::make('amount')
                     ->required()
                     ->numeric(),
+                Select::make('status')
+                    ->label('Status')
+                    ->options(
+                        fn() => auth()->user()?->hasRole('super_admin')
+                            ? [
+                                'pending' => 'Pending',
+                                'completed' => 'Completed',
+                            ]
+                            : [
+                                'pending' => 'Pending',
+                            ]
+                    )
+                    ->default('pending')
+                    ->required()
+                    ->visible(fn() => auth()->user()?->hasAnyRole(['super_admin', 'finance'])),
                 DatePicker::make('withdrawal_date')
                     ->required(),
                 Textarea::make('description')

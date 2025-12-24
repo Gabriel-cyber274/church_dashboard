@@ -19,31 +19,31 @@ class ProgramOfferingStats extends BaseWidget
     protected function getStats(): array
     {
         // Get offering totals
-        $totalOfferings = $this->record->offerings()->sum('amount');
-        $offeringCount = $this->record->offerings()->count();
+        $totalOfferings = $this->record->offerings()->where('status', 'completed')->sum('amount');
+        $offeringCount = $this->record->offerings()->where('status', 'completed')->count();
         $avgOffering = $offeringCount > 0 ? $totalOfferings / $offeringCount : 0;
 
         // Get recent offering data
-        $thisWeekOfferings = $this->record->offerings()
+        $thisWeekOfferings = $this->record->offerings()->where('status', 'completed')
             ->whereBetween('offering_date', [
                 Carbon::now()->startOfWeek(),
                 Carbon::now()->endOfWeek()
             ])
             ->sum('amount');
 
-        $lastWeekOfferings = $this->record->offerings()
+        $lastWeekOfferings = $this->record->offerings()->where('status', 'completed')
             ->whereBetween('offering_date', [
                 Carbon::now()->subWeek()->startOfWeek(),
                 Carbon::now()->subWeek()->endOfWeek()
             ])
             ->sum('amount');
 
-        $thisMonthOfferings = $this->record->offerings()
+        $thisMonthOfferings = $this->record->offerings()->where('status', 'completed')
             ->whereMonth('offering_date', Carbon::now()->month)
             ->whereYear('offering_date', Carbon::now()->year)
             ->sum('amount');
 
-        $lastMonthOfferings = $this->record->offerings()
+        $lastMonthOfferings = $this->record->offerings()->where('status', 'completed')
             ->whereMonth('offering_date', Carbon::now()->subMonth()->month)
             ->whereYear('offering_date', Carbon::now()->subMonth()->year)
             ->sum('amount');
@@ -114,7 +114,7 @@ class ProgramOfferingStats extends BaseWidget
         $chartData = [];
         for ($i = 6; $i >= 0; $i--) {
             $date = Carbon::now()->subDays($i);
-            $dailyTotal = $this->record->offerings()
+            $dailyTotal = $this->record->offerings()->where('status', 'completed')
                 ->whereDate('offering_date', $date->toDateString())
                 ->sum('amount');
             $chartData[] = $dailyTotal;
@@ -132,7 +132,7 @@ class ProgramOfferingStats extends BaseWidget
             $weekStart = $startOfMonth->copy()->addWeeks($i)->startOfWeek();
             $weekEnd = $weekStart->copy()->endOfWeek();
 
-            $weeklyTotal = $this->record->offerings()
+            $weeklyTotal = $this->record->offerings()->where('status', 'completed')
                 ->whereBetween('offering_date', [$weekStart, $weekEnd])
                 ->sum('amount');
 

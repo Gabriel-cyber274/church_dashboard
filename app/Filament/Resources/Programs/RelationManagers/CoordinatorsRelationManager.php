@@ -25,6 +25,7 @@ class CoordinatorsRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
+            ->defaultSort('members.id', 'desc')
             ->headerActions([
                 // CreateAction::make(),
                 AttachAction::make()

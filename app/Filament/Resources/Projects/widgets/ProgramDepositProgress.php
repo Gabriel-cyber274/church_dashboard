@@ -14,11 +14,11 @@ class ProgramDepositProgress extends BaseWidget
 
     protected ?string $pollingInterval = '10s';
 
-    
+
 
     protected function getStats(): array
     {
-        $totalDeposits = $this->record->deposits()->sum('amount');
+        $totalDeposits = $this->record->deposits()->where('status', 'completed')->sum('amount');
         $budget = $this->record->budget ?? 0;
 
         // Calculate percentage with precision
@@ -54,7 +54,7 @@ class ProgramDepositProgress extends BaseWidget
         }
 
         // Get additional stats
-        $depositCount = $this->record->deposits()->count();
+        $depositCount = $this->record->deposits()->where('status', 'completed')->count();
         $avgDeposit = $depositCount > 0 ? $totalDeposits / $depositCount : 0;
         $formattedAvg = Number::format($avgDeposit, 2);
 

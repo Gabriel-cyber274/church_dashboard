@@ -22,6 +22,7 @@ class ProgramsCoordinatedRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
+            ->defaultSort('programsCoordinated.id', 'desc')
             ->columns([
                 TextColumn::make('name')
                     ->label('Program Name')

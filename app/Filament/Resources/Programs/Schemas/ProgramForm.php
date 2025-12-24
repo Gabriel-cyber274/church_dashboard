@@ -14,6 +14,8 @@ class ProgramForm
     {
         return $schema
             ->components([
+                TextInput::make('flier_url')
+                    ->default(null),
                 TextInput::make('name')
                     ->required(),
                 Textarea::make('description')

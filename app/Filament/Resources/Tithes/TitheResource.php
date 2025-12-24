@@ -27,11 +27,18 @@ class TitheResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'amount';
 
+    protected static ?string $navigationLabel = 'Gratitudes';
+
+    protected static ?string $modelLabel = 'gratitude';
+
+    protected static ?string $pluralModelLabel = 'gratitudes';
+
     public static function shouldRegisterNavigation(): bool
     {
         return auth()->check() && auth()->user()->hasAnyRole([
             'super_admin',
             'admin',
+            'finance',
         ]);
     }
 

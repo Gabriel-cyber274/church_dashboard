@@ -20,6 +20,8 @@ class ProgramsRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
+            ->defaultSort('programs.id', 'desc') // if joining programs table
+
             ->headerActions([
                 // CreateAction::make(),
             ])->recordActions([

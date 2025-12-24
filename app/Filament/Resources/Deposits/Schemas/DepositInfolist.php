@@ -18,6 +18,13 @@ class DepositInfolist
                     ->numeric(),
                 TextEntry::make('deposit_date')
                     ->date(),
+
+                TextEntry::make('status')
+                    ->badge()
+                    ->colors([
+                        'warning' => 'pending',
+                        'success' => 'completed',
+                    ]),
                 TextEntry::make('description'),
                 TextEntry::make('deleted_at')
                     ->dateTime(),

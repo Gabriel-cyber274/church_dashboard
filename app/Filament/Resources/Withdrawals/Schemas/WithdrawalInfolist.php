@@ -17,6 +17,12 @@ class WithdrawalInfolist
                     ->numeric(),
                 TextEntry::make('withdrawal_date')
                     ->date(),
+                TextEntry::make('status')
+                    ->badge()
+                    ->colors([
+                        'warning' => 'pending',
+                        'success' => 'completed',
+                    ]),
                 TextEntry::make('description'),
                 TextEntry::make('deleted_at')
                     ->dateTime(),

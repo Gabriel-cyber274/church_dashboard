@@ -24,6 +24,7 @@ use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Actions\BulkActionGroup;
+use Filament\Tables\Columns\BadgeColumn;
 use Illuminate\Database\Eloquent\Model;
 
 
@@ -39,6 +40,7 @@ class DepositsRelationManager extends RelationManager
         return auth()->check() && auth()->user()->hasAnyRole([
             'super_admin',
             'admin',
+            'finance'
         ]);
     }
 
@@ -47,15 +49,28 @@ class DepositsRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
+            ->defaultSort('deposits.id', 'desc')
             ->columns([
                 TextColumn::make('amount'),
                 TextColumn::make('deposit_date')->date(),
+
+                BadgeColumn::make('status')
+                    ->sortable()
+                    ->colors([
+                        'warning' => 'pending',
+                        'success' => 'completed',
+                    ])
+                    ->label('Status')
+                    ->searchable(),
                 TextColumn::make('description'),
                 TextColumn::make('member.full_name')->label('Member'),
                 TextColumn::make('project.name')->label('Project'),
             ])
             ->headerActions([
-                CreateAction::make('createDeposit')
+                CreateAction::make('createDeposit')->visible(fn() => auth()->user()?->hasAnyRole([
+                    'super_admin',
+                    'finance',
+                ]))
                     ->modalHeading(fn() => 'Add Deposit for ' . $this->getOwnerRecord()->name)
                     ->form([
                         // program_id is hidden and prefilled
@@ -130,7 +145,10 @@ class DepositsRelationManager extends RelationManager
             ->recordActions([
                 ViewAction::make()
                     ->url(fn(Deposit $record): string => DepositResource::getUrl('view', ['record' => $record])),
-                EditAction::make()
+                EditAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
+                    'super_admin',
+                    'finance',
+                ]))
                     ->form([
                         Select::make('member_id')
                             ->label('Member')
@@ -167,9 +185,16 @@ class DepositsRelationManager extends RelationManager
                         Textarea::make('description')
                             ->default(null),
                     ]),
-                DeleteAction::make(),
-                RestoreAction::make(),
-                ForceDeleteAction::make(),
+                DeleteAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
+                    'super_admin',
+                    'finance',
+                ])),
+                RestoreAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
+                    'super_admin',
+                ])),
+                ForceDeleteAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
+                    'super_admin',
+                ])),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

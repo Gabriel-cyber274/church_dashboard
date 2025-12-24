@@ -14,6 +14,7 @@ class Project extends Model
         'description',
         'deadline',
         'budget',
+        'status'
     ];
 
     public function banks()

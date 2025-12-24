@@ -34,6 +34,7 @@ class DepositResource extends Resource
         return auth()->check() && auth()->user()->hasAnyRole([
             'super_admin',
             'admin',
+            'finance',
         ]);
     }
 

@@ -18,12 +18,12 @@ class ProgramWithdrawalProgress extends BaseWidget
     protected function getStats(): array
     {
         // Get withdrawal totals
-        $totalWithdrawals = $this->record->withdrawals()->sum('amount');
-        $withdrawalCount = $this->record->withdrawals()->count();
+        $totalWithdrawals = $this->record->withdrawals()->where('status', 'completed')->sum('amount');
+        $withdrawalCount = $this->record->withdrawals()->where('status', 'completed')->count();
         $avgWithdrawal = $withdrawalCount > 0 ? $totalWithdrawals / $withdrawalCount : 0;
 
         // Get deposit and budget data
-        $totalDeposits = $this->record->deposits()->sum('amount');
+        $totalDeposits = $this->record->deposits()->where('status', 'completed')->sum('amount');
         $budget = $this->record->budget ?? 0;
 
         // Calculate available funds and withdrawal impact
@@ -42,11 +42,11 @@ class ProgramWithdrawalProgress extends BaseWidget
         $formattedRemainingBudget = Number::format($remainingBudgetPercent, 1);
 
         // Withdrawal frequency stats
-        $thisMonthWithdrawals = $this->record->withdrawals()
+        $thisMonthWithdrawals = $this->record->withdrawals()->where('status', 'completed')
             ->whereMonth('withdrawal_date', now()->month)
             ->sum('amount');
 
-        $lastMonthWithdrawals = $this->record->withdrawals()
+        $lastMonthWithdrawals = $this->record->withdrawals()->where('status', 'completed')
             ->whereMonth('withdrawal_date', now()->subMonth()->month)
             ->sum('amount');
 
@@ -126,7 +126,7 @@ class ProgramWithdrawalProgress extends BaseWidget
         $chartData = [];
         for ($i = 4; $i >= 0; $i--) {
             $date = now()->subMonths($i);
-            $monthTotal = $this->record->withdrawals()
+            $monthTotal = $this->record->withdrawals()->where('status', 'completed')
                 ->whereYear('withdrawal_date', $date->year)
                 ->whereMonth('withdrawal_date', $date->month)
                 ->sum('amount');

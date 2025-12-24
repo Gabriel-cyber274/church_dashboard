@@ -22,6 +22,7 @@ class DepartmentsRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
+            ->defaultSort('departments.id', 'desc')
             ->headerActions([
                 AttachAction::make()
                     ->label('Add Department')

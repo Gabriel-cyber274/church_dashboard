@@ -22,6 +22,7 @@ class MembersRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
+            ->defaultSort('members.id', 'desc')
             ->recordTitleAttribute('first_name')
             ->columns([
                 Tables\Columns\TextColumn::make('first_name')

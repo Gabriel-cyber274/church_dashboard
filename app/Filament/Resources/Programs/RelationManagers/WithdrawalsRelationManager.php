@@ -24,6 +24,7 @@ use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Actions\BulkActionGroup;
+use Filament\Tables\Columns\BadgeColumn;
 use Illuminate\Database\Eloquent\Model;
 
 
@@ -38,6 +39,7 @@ class WithdrawalsRelationManager extends RelationManager
         return auth()->check() && auth()->user()->hasAnyRole([
             'super_admin',
             'admin',
+            'finance'
         ]);
     }
 
@@ -46,14 +48,27 @@ class WithdrawalsRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
+            ->defaultSort('withdrawals.id', 'desc')
             ->columns([
                 TextColumn::make('amount'),
                 TextColumn::make('withdrawal_date')->date(),
+
+                BadgeColumn::make('status')
+                    ->sortable()
+                    ->colors([
+                        'warning' => 'pending',
+                        'success' => 'completed',
+                    ])
+                    ->label('Status')
+                    ->searchable(),
                 TextColumn::make('description'),
                 TextColumn::make('project.name')->label('Project'),
             ])
             ->headerActions([
-                CreateAction::make('createWithdrawal')
+                CreateAction::make('createWithdrawal')->visible(fn() => auth()->user()?->hasAnyRole([
+                    'super_admin',
+                    'finance',
+                ]))
                     ->modalHeading(fn() => 'Add Withdrawal for ' . $this->getOwnerRecord()->name)
                     ->form([
                         // program_id is hidden and prefilled
@@ -106,7 +121,10 @@ class WithdrawalsRelationManager extends RelationManager
             ->recordActions([
                 ViewAction::make()
                     ->url(fn(Withdrawal $record): string => WithdrawalResource::getUrl('view', ['record' => $record])),
-                EditAction::make()
+                EditAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
+                    'super_admin',
+                    'finance',
+                ]))
                     ->form([
                         Select::make('project_id')
                             ->label('Project')
@@ -121,9 +139,16 @@ class WithdrawalsRelationManager extends RelationManager
                         Textarea::make('description')
                             ->default(null),
                     ]),
-                DeleteAction::make(),
-                RestoreAction::make(),
-                ForceDeleteAction::make(),
+                DeleteAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
+                    'super_admin',
+                    'finance',
+                ])),
+                RestoreAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
+                    'super_admin',
+                ])),
+                ForceDeleteAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
+                    'super_admin',
+                ])),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

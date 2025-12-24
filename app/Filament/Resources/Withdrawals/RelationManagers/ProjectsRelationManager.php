@@ -21,6 +21,7 @@ class ProjectsRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
+            ->defaultSort('projects.id', 'desc')
             ->headerActions([
                 // CreateAction::make(),
             ])->recordActions([

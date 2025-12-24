@@ -16,6 +16,12 @@ class ProjectInfolist
                     ->date(),
                 TextEntry::make('budget')
                     ->numeric(),
+                TextEntry::make('status')
+                    ->badge()
+                    ->colors([
+                        'warning' => 'pending',
+                        'success' => 'completed',
+                    ]),
                 TextEntry::make('deleted_at')
                     ->dateTime(),
                 TextEntry::make('created_at')

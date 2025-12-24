@@ -23,6 +23,7 @@ class RolesRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
+            ->defaultSort('roles.id', 'desc')
             ->headerActions([
                 // CreateAction::make(),
                 AttachAction::make()

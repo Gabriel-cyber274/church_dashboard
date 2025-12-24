@@ -43,15 +43,13 @@
                         <h5 class="mb-3">Confirmation</h5>
                         <p class="text-muted mb-4">
                             After making your contribution to one of the bank accounts listed above, please confirm your
-                            payment by clicking the button below.
+                            payment by clicking the button below. You'll be asked to provide your name and phone number.
                         </p>
 
-                        <form method="POST" action="{{ route('contributions.confirm') }}">
-                            @csrf
-                            <button class="btn btn-success px-4">
-                                <span style="margin-right: 8px;">✓</span> I Have Sent My Contribution
-                            </button>
-                        </form>
+                        <a href="{{ route('contributions.confirm.form', ['type' => 'program', 'id' => $program->id]) }}"
+                            class="btn btn-success px-4">
+                            <span style="margin-right: 8px;">✓</span> I Have Sent My Contribution
+                        </a>
                     </div>
                 </div>
             </div>

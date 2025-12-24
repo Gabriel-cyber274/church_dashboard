@@ -23,7 +23,7 @@ use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Actions\BulkActionGroup;
-
+use Filament\Tables\Columns\BadgeColumn;
 use Illuminate\Database\Eloquent\Model;
 
 
@@ -33,24 +33,40 @@ class TithesRelationManager extends RelationManager
 
     protected static ?string $relatedResource = null; // we will handle form inline
 
+    protected static ?string $title = 'Gratitudes';
+
     public static function canViewForRecord(Model $ownerRecord, string $pageClass): bool
     {
         return auth()->check() && auth()->user()->hasAnyRole([
             'super_admin',
             'admin',
+            'finance'
         ]);
     }
 
     public function table(Table $table): Table
     {
         return $table
+            ->defaultSort('tithes.id', 'desc')
             ->columns([
                 TextColumn::make('amount'),
                 TextColumn::make('tithe_date')->date(),
+
+                BadgeColumn::make('status')
+                    ->sortable()
+                    ->colors([
+                        'warning' => 'pending',
+                        'success' => 'completed',
+                    ])
+                    ->label('Status')
+                    ->searchable(),
                 TextColumn::make('description'),
             ])
             ->headerActions([
-                CreateAction::make('createTithe')
+                CreateAction::make('createTithe')->visible(fn() => auth()->user()?->hasAnyRole([
+                    'super_admin',
+                    'finance',
+                ]))
                     ->modalHeading(fn() => 'Add Tithe for ' . $this->getOwnerRecord()->name)
                     ->form([
                         // program_id is hidden and prefilled
@@ -98,7 +114,10 @@ class TithesRelationManager extends RelationManager
             ->recordActions([
                 ViewAction::make()
                     ->url(fn(Tithe $record): string => TitheResource::getUrl('view', ['record' => $record])),
-                EditAction::make()
+                EditAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
+                    'super_admin',
+                    'finance',
+                ]))
                     ->form([
                         TextInput::make('amount')
                             ->required()
@@ -108,9 +127,16 @@ class TithesRelationManager extends RelationManager
                         Textarea::make('description')
                             ->default(null),
                     ]),
-                DeleteAction::make(),
-                RestoreAction::make(),
-                ForceDeleteAction::make(),
+                DeleteAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
+                    'super_admin',
+                    'finance',
+                ])),
+                RestoreAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
+                    'super_admin',
+                ])),
+                ForceDeleteAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
+                    'super_admin',
+                ])),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

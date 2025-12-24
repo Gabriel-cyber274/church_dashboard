@@ -13,7 +13,10 @@ class ViewWithdrawal extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
-            EditAction::make(),
+            EditAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
+                'super_admin',
+                'finance',
+            ])),
         ];
     }
 }

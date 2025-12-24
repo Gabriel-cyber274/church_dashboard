@@ -48,6 +48,7 @@ class MemberDemographicsWidget extends BaseWidget
                 ->visible(fn() => auth()->user()?->hasAnyRole([
                     'super_admin',
                     'admin',
+                    'finance',
                 ])),
         ];
     }

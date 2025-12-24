@@ -26,6 +26,7 @@ class PledgesTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->defaultSort('id', 'desc')
             ->columns([
                 TextColumn::make('member.full_name')->label('Member')->sortable(),
 
@@ -101,10 +102,20 @@ class PledgesTable
             ])
             ->recordActions([
                 ViewAction::make(),
-                EditAction::make(),
-                DeleteAction::make(),
-                RestoreAction::make(),
-                ForceDeleteAction::make(),
+                EditAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
+                    'super_admin',
+                    'finance',
+                ])),
+                DeleteAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
+                    'super_admin',
+                    'finance',
+                ])),
+                ForceDeleteAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
+                    'super_admin',
+                ])),
+                RestoreAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
+                    'super_admin',
+                ])),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

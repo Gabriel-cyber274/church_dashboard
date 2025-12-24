@@ -17,6 +17,7 @@ class IncomeChartWidget extends ChartWidget
         return auth()->user()?->hasAnyRole([
             'super_admin',
             'admin',
+            'finance',
         ]) ?? false;
     }
 
@@ -32,9 +33,9 @@ class IncomeChartWidget extends ChartWidget
         $startDate = $dateRange['start'];
         $endDate = $dateRange['end'];
 
-        $deposits = Deposit::whereBetween('deposit_date', [$startDate, $endDate])->sum('amount');
-        $offerings = Offering::whereBetween('offering_date', [$startDate, $endDate])->sum('amount');
-        $tithes = Tithe::whereBetween('tithe_date', [$startDate, $endDate])->sum('amount');
+        $deposits = Deposit::whereBetween('deposit_date', [$startDate, $endDate])->where('status', 'completed')->sum('amount');
+        $offerings = Offering::whereBetween('offering_date', [$startDate, $endDate])->where('status', 'completed')->sum('amount');
+        $tithes = Tithe::whereBetween('tithe_date', [$startDate, $endDate])->where('status', 'completed')->sum('amount');
 
         return [
             'datasets' => [
@@ -44,7 +45,7 @@ class IncomeChartWidget extends ChartWidget
                     'backgroundColor' => ['#3B82F6', '#10B981', '#F59E0B'],
                 ],
             ],
-            'labels' => ['Deposits', 'Offerings', 'Tithes'],
+            'labels' => ['Deposits', 'Offerings', 'Gratitudes'],
         ];
     }
 

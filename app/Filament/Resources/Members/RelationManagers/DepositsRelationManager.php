@@ -24,6 +24,7 @@ use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Actions\ViewAction;
+use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Filters\TrashedFilter;
 
 use Filament\Tables\Filters\Filter;
@@ -43,6 +44,7 @@ class DepositsRelationManager extends RelationManager
         return auth()->check() && auth()->user()->hasAnyRole([
             'super_admin',
             'admin',
+            'finance'
         ]);
     }
 
@@ -50,6 +52,7 @@ class DepositsRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
+            ->defaultSort('deposits.id', 'desc')
             ->columns([
                 TextColumn::make('amount')
                     ->sortable(),
@@ -58,6 +61,15 @@ class DepositsRelationManager extends RelationManager
                     ->sortable(),
                 TextColumn::make('description')
                     ->limit(50),
+
+                BadgeColumn::make('status')
+                    ->sortable()
+                    ->colors([
+                        'warning' => 'pending',
+                        'success' => 'completed',
+                    ])
+                    ->label('Status')
+                    ->searchable(),
                 TextColumn::make('program.name')
                     ->label('Program')
                     ->sortable(),
@@ -70,7 +82,10 @@ class DepositsRelationManager extends RelationManager
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->headerActions([
-                CreateAction::make('createDeposit')
+                CreateAction::make('createDeposit')->visible(fn() => auth()->user()?->hasAnyRole([
+                    'super_admin',
+                    'finance',
+                ]))
                     ->modalHeading(fn() => 'Add Deposit for ' . $this->getOwnerRecord()->full_name)
                     ->form([
                         // member_id is hidden and prefilled
@@ -156,7 +171,10 @@ class DepositsRelationManager extends RelationManager
             ->recordActions([
                 ViewAction::make()
                     ->url(fn(Deposit $record): string => DepositResource::getUrl('view', ['record' => $record])),
-                EditAction::make()
+                EditAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
+                    'super_admin',
+                    'finance',
+                ]))
                     ->form([
                         Select::make('program_id')
                             ->label('Program')
@@ -181,9 +199,16 @@ class DepositsRelationManager extends RelationManager
                             ->maxLength(500)
                             ->nullable(),
                     ]),
-                DeleteAction::make(),
-                RestoreAction::make(),
-                ForceDeleteAction::make(),
+                DeleteAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
+                    'super_admin',
+                    'finance',
+                ])),
+                RestoreAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
+                    'super_admin',
+                ])),
+                ForceDeleteAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
+                    'super_admin',
+                ])),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

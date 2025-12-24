@@ -14,6 +14,7 @@ class Tithe extends Model
         'amount',
         'tithe_date',
         'description',
+        'status',
     ];
 
     public function program()

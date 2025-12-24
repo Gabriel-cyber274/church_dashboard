@@ -21,6 +21,7 @@ class ProgrammeAttendeesTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->defaultSort('id', 'desc')
             ->modifyQueryUsing(function (Builder $query) {
                 // Always filter to show only non-members (guests)
                 return $query->whereNull('member_id');

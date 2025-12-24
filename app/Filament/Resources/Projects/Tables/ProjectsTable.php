@@ -11,6 +11,7 @@ use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Actions\ViewAction;
+use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
@@ -20,12 +21,22 @@ class ProjectsTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->defaultSort('id', 'desc')
             ->columns([
                 TextColumn::make('name')
                     ->searchable(),
                 TextColumn::make('deadline')
                     ->date()
                     ->sortable(),
+
+                BadgeColumn::make('status')
+                    ->sortable()
+                    ->colors([
+                        'warning' => 'pending',
+                        'success' => 'completed',
+                    ])
+                    ->label('Status')
+                    ->searchable(),
                 TextColumn::make('budget')
                     ->numeric()
                     ->sortable(),
@@ -49,19 +60,15 @@ class ProjectsTable
                 ViewAction::make(),
                 EditAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
                     'super_admin',
-                    'admin',
                 ])),
                 DeleteAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
                     'super_admin',
-                    'admin',
                 ])),
                 ForceDeleteAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
                     'super_admin',
-                    'admin',
                 ])),
                 RestoreAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
                     'super_admin',
-                    'admin',
                 ])),
             ])
             ->toolbarActions([
@@ -71,7 +78,6 @@ class ProjectsTable
                     RestoreBulkAction::make(),
                 ])->visible(fn() => auth()->user()?->hasAnyRole([
                     'super_admin',
-                    'admin',
                 ])),
             ]);
     }

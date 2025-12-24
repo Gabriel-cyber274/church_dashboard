@@ -26,6 +26,7 @@ class BanksRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
+            ->defaultSort('banks.id', 'desc')
             ->headerActions([
                 // CreateAction::make(),
                 AttachAction::make()

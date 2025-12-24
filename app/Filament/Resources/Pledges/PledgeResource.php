@@ -6,6 +6,7 @@ use App\Filament\Resources\Pledges\Pages\CreatePledge;
 use App\Filament\Resources\Pledges\Pages\EditPledge;
 use App\Filament\Resources\Pledges\Pages\ListPledges;
 use App\Filament\Resources\Pledges\Pages\ViewPledge;
+use App\Filament\Resources\Pledges\RelationManagers\DepositsRelationManager;
 use App\Filament\Resources\Pledges\RelationManagers\MembersRelationManager;
 use App\Filament\Resources\Pledges\RelationManagers\ProgramsRelationManager;
 use App\Filament\Resources\Pledges\RelationManagers\ProjectsRelationManager;
@@ -34,6 +35,7 @@ class PledgeResource extends Resource
         return auth()->check() && auth()->user()->hasAnyRole([
             'super_admin',
             'admin',
+            'finance',
         ]);
     }
 
@@ -60,6 +62,7 @@ class PledgeResource extends Resource
             ProgramsRelationManager::class,
             MembersRelationManager::class,
             ProjectsRelationManager::class,
+            DepositsRelationManager::class
         ];
     }
 

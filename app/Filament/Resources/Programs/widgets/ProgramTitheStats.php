@@ -19,29 +19,29 @@ class ProgramTitheStats extends BaseWidget
     protected function getStats(): array
     {
         // Get tithe totals
-        $totalTithes = $this->record->tithes()->sum('amount');
-        $titheCount = $this->record->tithes()->count();
+        $totalTithes = $this->record->tithes()->where('status', 'completed')->sum('amount');
+        $titheCount = $this->record->tithes()->where('status', 'completed')->count();
         $avgTithe = $titheCount > 0 ? $totalTithes / $titheCount : 0;
 
         // Get monthly and weekly comparisons
-        $thisMonthTithes = $this->record->tithes()
+        $thisMonthTithes = $this->record->tithes()->where('status', 'completed')
             ->whereMonth('tithe_date', Carbon::now()->month)
             ->whereYear('tithe_date', Carbon::now()->year)
             ->sum('amount');
 
-        $lastMonthTithes = $this->record->tithes()
+        $lastMonthTithes = $this->record->tithes()->where('status', 'completed')
             ->whereMonth('tithe_date', Carbon::now()->subMonth()->month)
             ->whereYear('tithe_date', Carbon::now()->subMonth()->year)
             ->sum('amount');
 
-        $thisQuarterTithes = $this->record->tithes()
+        $thisQuarterTithes = $this->record->tithes()->where('status', 'completed')
             ->whereBetween('tithe_date', [
                 Carbon::now()->startOfQuarter(),
                 Carbon::now()->endOfQuarter()
             ])
             ->sum('amount');
 
-        $lastQuarterTithes = $this->record->tithes()
+        $lastQuarterTithes = $this->record->tithes()->where('status', 'completed')
             ->whereBetween('tithe_date', [
                 Carbon::now()->subQuarter()->startOfQuarter(),
                 Carbon::now()->subQuarter()->endOfQuarter()
@@ -56,7 +56,7 @@ class ProgramTitheStats extends BaseWidget
             (($thisQuarterTithes - $lastQuarterTithes) / $lastQuarterTithes) * 100 : 0;
 
         // Calculate consistency (percentage of months with tithes)
-        $firstTithe = $this->record->tithes()->orderBy('tithe_date')->first();
+        $firstTithe = $this->record->tithes()->where('status', 'completed')->orderBy('tithe_date')->first();
         $monthsActive = $firstTithe ?
             Carbon::parse($firstTithe->tithe_date)->diffInMonths(now()) + 1 : 0;
 
@@ -117,7 +117,7 @@ class ProgramTitheStats extends BaseWidget
         // Last 6 months of tithe data
         for ($i = 5; $i >= 0; $i--) {
             $date = Carbon::now()->subMonths($i);
-            $monthlyTotal = $this->record->tithes()
+            $monthlyTotal = $this->record->tithes()->where('status', 'completed')
                 ->whereMonth('tithe_date', $date->month)
                 ->whereYear('tithe_date', $date->year)
                 ->sum('amount');
@@ -136,7 +136,7 @@ class ProgramTitheStats extends BaseWidget
             $quarterStart = Carbon::now()->subQuarters($i)->startOfQuarter();
             $quarterEnd = $quarterStart->copy()->endOfQuarter();
 
-            $quarterlyTotal = $this->record->tithes()
+            $quarterlyTotal = $this->record->tithes()->where('status', 'completed')
                 ->whereBetween('tithe_date', [$quarterStart, $quarterEnd])
                 ->sum('amount');
 

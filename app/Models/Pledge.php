@@ -34,4 +34,9 @@ class Pledge extends Model
     {
         return $this->belongsTo(Project::class);
     }
+
+    public function deposits()
+    {
+        return $this->hasMany(Deposit::class);
+    }
 }

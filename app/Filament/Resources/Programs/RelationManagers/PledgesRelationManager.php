@@ -23,6 +23,7 @@ use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Actions\ViewAction;
+use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Filters\TrashedFilter;
 
 use Filament\Tables\Filters\Filter;
@@ -43,6 +44,7 @@ class PledgesRelationManager extends RelationManager
         return auth()->check() && auth()->user()->hasAnyRole([
             'super_admin',
             'admin',
+            'finance'
         ]);
     }
 
@@ -50,15 +52,27 @@ class PledgesRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
+            ->defaultSort('pledges.id', 'desc')
             ->columns([
                 TextColumn::make('amount'),
                 TextColumn::make('pledge_date')->date(),
-                TextColumn::make('status'),
+
+                BadgeColumn::make('status')
+                    ->sortable()
+                    ->colors([
+                        'warning' => 'pending',
+                        'success' => 'completed',
+                    ])
+                    ->label('Status')
+                    ->searchable(),
                 TextColumn::make('member.full_name')->label('Member'),
                 TextColumn::make('project.name')->label('Project'),
             ])
             ->headerActions([
-                CreateAction::make('createPledge')
+                CreateAction::make('createPledge')->visible(fn() => auth()->user()?->hasAnyRole([
+                    'super_admin',
+                    'finance',
+                ]))
                     ->modalHeading(fn() => 'Add Pledge for ' . $this->getOwnerRecord()->name)
                     ->form([
                         // program_id is hidden and prefilled
@@ -140,7 +154,10 @@ class PledgesRelationManager extends RelationManager
             ->recordActions([
                 ViewAction::make()
                     ->url(fn(Pledge $record): string => PledgeResource::getUrl('view', ['record' => $record])),
-                EditAction::make()
+                EditAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
+                    'super_admin',
+                    'finance',
+                ]))
                     ->form([
                         Select::make('member_id')
                             ->label('Member')
@@ -164,9 +181,16 @@ class PledgesRelationManager extends RelationManager
                         TextInput::make('name')->default(null),
                         TextInput::make('phone_number')->tel()->default(null),
                     ]),
-                DeleteAction::make(),
-                RestoreAction::make(),
-                ForceDeleteAction::make(),
+                DeleteAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
+                    'super_admin',
+                    'finance',
+                ])),
+                RestoreAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
+                    'super_admin',
+                ])),
+                ForceDeleteAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
+                    'super_admin',
+                ])),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

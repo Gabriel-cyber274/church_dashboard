@@ -36,6 +36,10 @@ class ProgramResource extends Resource
 
     protected static ?string $navigationLabel = 'Programmes';
 
+    protected static ?string $modelLabel = 'programme';
+
+    protected static ?string $pluralModelLabel = 'programmes';
+
     public static function form(Schema $schema): Schema
     {
         return ProgramForm::configure($schema);

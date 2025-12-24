@@ -16,6 +16,7 @@ use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Filament\Tables\Filters\Filter;
 use Filament\Forms\Components\DatePicker;
+use Filament\Tables\Columns\BadgeColumn;
 use Illuminate\Database\Eloquent\Builder;
 
 class WithdrawalsTable
@@ -23,6 +24,7 @@ class WithdrawalsTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->defaultSort('id', 'desc')
             ->columns([
 
                 TextColumn::make('program.name')->label('Program')->sortable(),
@@ -35,8 +37,17 @@ class WithdrawalsTable
                 TextColumn::make('withdrawal_date')
                     ->date()
                     ->sortable(),
+                BadgeColumn::make('status')
+                    ->sortable()
+                    ->colors([
+                        'warning' => 'pending',
+                        'success' => 'completed',
+                    ])
+                    ->label('Status')
+                    ->searchable(),
                 TextColumn::make('description')
                     ->searchable(),
+
                 TextColumn::make('deleted_at')
                     ->dateTime()
                     ->sortable()
@@ -76,10 +87,20 @@ class WithdrawalsTable
             ])
             ->recordActions([
                 ViewAction::make(),
-                EditAction::make(),
-                DeleteAction::make(),
-                ForceDeleteAction::make(),
-                RestoreAction::make(),
+                EditAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
+                    'super_admin',
+                    'finance',
+                ])),
+                DeleteAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
+                    'super_admin',
+                    'finance',
+                ])),
+                ForceDeleteAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
+                    'super_admin',
+                ])),
+                RestoreAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
+                    'super_admin',
+                ])),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

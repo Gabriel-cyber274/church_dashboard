@@ -23,7 +23,7 @@ use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Actions\BulkActionGroup;
-
+use Filament\Tables\Columns\BadgeColumn;
 use Illuminate\Database\Eloquent\Model;
 
 
@@ -38,19 +38,33 @@ class OfferingsRelationManager extends RelationManager
         return auth()->check() && auth()->user()->hasAnyRole([
             'super_admin',
             'admin',
+            'finance'
         ]);
     }
 
     public function table(Table $table): Table
     {
         return $table
+            ->defaultSort('offerings.id', 'desc')
             ->columns([
                 TextColumn::make('amount'),
                 TextColumn::make('offering_date')->date(),
+
+                BadgeColumn::make('status')
+                    ->sortable()
+                    ->colors([
+                        'warning' => 'pending',
+                        'success' => 'completed',
+                    ])
+                    ->label('Status')
+                    ->searchable(),
                 TextColumn::make('description'),
             ])
             ->headerActions([
-                CreateAction::make('createOffering')
+                CreateAction::make('createOffering')->visible(fn() => auth()->user()?->hasAnyRole([
+                    'super_admin',
+                    'finance',
+                ]))
                     ->modalHeading(fn() => 'Add Offering for ' . $this->getOwnerRecord()->name)
                     ->form([
                         // program_id is hidden and prefilled
@@ -98,7 +112,10 @@ class OfferingsRelationManager extends RelationManager
             ->recordActions([
                 ViewAction::make()
                     ->url(fn(Offering $record): string => OfferingResource::getUrl('view', ['record' => $record])),
-                EditAction::make()
+                EditAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
+                    'super_admin',
+                    'finance',
+                ]))
                     ->form([
                         TextInput::make('amount')
                             ->required()
@@ -108,9 +125,16 @@ class OfferingsRelationManager extends RelationManager
                         Textarea::make('description')
                             ->default(null),
                     ]),
-                DeleteAction::make(),
-                RestoreAction::make(),
-                ForceDeleteAction::make(),
+                DeleteAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
+                    'super_admin',
+                    'finance',
+                ])),
+                RestoreAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
+                    'super_admin',
+                ])),
+                ForceDeleteAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
+                    'super_admin',
+                ])),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

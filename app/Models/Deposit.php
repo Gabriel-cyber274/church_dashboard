@@ -13,9 +13,18 @@ class Deposit extends Model
         'program_id',
         'project_id',
         'member_id',
+        'pledge_id',
         'amount',
         'deposit_date',
         'description',
+        'status',
+    ];
+
+    protected $casts = [
+        'deposit_date' => 'date',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+        'deleted_at' => 'datetime',
     ];
 
     public function member()
@@ -30,5 +39,10 @@ class Deposit extends Model
     public function project()
     {
         return $this->belongsTo(Project::class);
+    }
+
+    public function pledge()
+    {
+        return $this->belongsTo(Pledge::class);
     }
 }

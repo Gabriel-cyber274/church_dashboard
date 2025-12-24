@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Programs\Schemas;
 
 use Filament\Infolists\Components\IconEntry;
+use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Schema;
 
@@ -12,6 +13,12 @@ class ProgramInfolist
     {
         return $schema
             ->components([
+                ImageEntry::make('flier_url')
+                    ->label('Flier/Poster')
+                    ->default(null)
+                    ->height(200)
+                    ->square()
+                    ->visibility('public'),
                 TextEntry::make('name'),
                 TextEntry::make('start_date')
                     ->dateTime(),

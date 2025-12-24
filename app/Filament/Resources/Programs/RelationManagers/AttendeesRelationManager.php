@@ -36,6 +36,7 @@ class AttendeesRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
+            ->defaultSort('programme_attendees.id', 'desc')
             ->columns([
                 TextColumn::make('member.full_name')->label('Member'),
                 TextColumn::make('attendance_time')->time(),

@@ -20,7 +20,7 @@ class MemberStatsWidget extends BaseWidget
         $activeMembers = $this->getActiveMembersCount();
         $averageAge = $this->getAverageAge();
 
-        $totalDeposits = Deposit::whereMonth('created_at', now()->month)->sum('amount');
+        $totalDeposits = Deposit::whereMonth('created_at', now()->month)->where('status', 'completed')->sum('amount');
         $avgDepositPerMember = $totalMembers > 0 ? $totalDeposits / $totalMembers : 0;
 
         return [
@@ -52,6 +52,7 @@ class MemberStatsWidget extends BaseWidget
                 ->visible(fn() => auth()->user()?->hasAnyRole([
                     'super_admin',
                     'admin',
+                    'finance',
                 ])),
 
             Stat::make('Marital Status', $this->getMaritalStatusSummary())
@@ -66,7 +67,7 @@ class MemberStatsWidget extends BaseWidget
         // Consider members active if they made a deposit in the last 3 months
         $threeMonthsAgo = now()->subMonths(3);
         return Member::whereHas('deposits', function ($query) use ($threeMonthsAgo) {
-            $query->where('created_at', '>=', $threeMonthsAgo);
+            $query->where('created_at', '>=', $threeMonthsAgo)->where('status', 'completed');
         })->count();
     }
 

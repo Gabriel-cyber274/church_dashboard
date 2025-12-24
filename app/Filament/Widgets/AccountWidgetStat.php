@@ -20,6 +20,7 @@ class AccountWidgetStat extends BaseWidget
         return auth()->user()?->hasAnyRole([
             'super_admin',
             'admin',
+            'finance',
         ]) ?? false;
     }
 
@@ -31,16 +32,16 @@ class AccountWidgetStat extends BaseWidget
         $startOfYear = $now->copy()->startOfYear();
 
         // Get current month totals
-        $currentMonthDeposits = Deposit::whereBetween('deposit_date', [$startOfMonth, $now])->sum('amount');
-        $currentMonthWithdrawals = Withdrawal::whereBetween('withdrawal_date', [$startOfMonth, $now])->sum('amount');
-        $currentMonthOfferings = Offering::whereBetween('offering_date', [$startOfMonth, $now])->sum('amount');
-        $currentMonthTithes = Tithe::whereBetween('tithe_date', [$startOfMonth, $now])->sum('amount');
+        $currentMonthDeposits = Deposit::whereBetween('deposit_date', [$startOfMonth, $now])->where('status', 'completed')->sum('amount');
+        $currentMonthWithdrawals = Withdrawal::whereBetween('withdrawal_date', [$startOfMonth, $now])->where('status', 'completed')->sum('amount');
+        $currentMonthOfferings = Offering::whereBetween('offering_date', [$startOfMonth, $now])->where('status', 'completed')->sum('amount');
+        $currentMonthTithes = Tithe::whereBetween('tithe_date', [$startOfMonth, $now])->where('status', 'completed')->sum('amount');
 
         // Get year-to-date totals
-        $ytdDeposits = Deposit::whereBetween('deposit_date', [$startOfYear, $now])->sum('amount');
-        $ytdWithdrawals = Withdrawal::whereBetween('withdrawal_date', [$startOfYear, $now])->sum('amount');
-        $ytdOfferings = Offering::whereBetween('offering_date', [$startOfYear, $now])->sum('amount');
-        $ytdTithes = Tithe::whereBetween('tithe_date', [$startOfYear, $now])->sum('amount');
+        $ytdDeposits = Deposit::whereBetween('deposit_date', [$startOfYear, $now])->where('status', 'completed')->sum('amount');
+        $ytdWithdrawals = Withdrawal::whereBetween('withdrawal_date', [$startOfYear, $now])->where('status', 'completed')->sum('amount');
+        $ytdOfferings = Offering::whereBetween('offering_date', [$startOfYear, $now])->where('status', 'completed')->sum('amount');
+        $ytdTithes = Tithe::whereBetween('tithe_date', [$startOfYear, $now])->where('status', 'completed')->sum('amount');
 
         // Calculate total balance
         $totalIncome = $ytdDeposits + $ytdOfferings + $ytdTithes;
@@ -74,10 +75,10 @@ class AccountWidgetStat extends BaseWidget
             $start = $month->copy()->startOfMonth();
             $end = $month->copy()->endOfMonth();
 
-            $deposits = Deposit::whereBetween('deposit_date', [$start, $end])->sum('amount');
-            $offerings = Offering::whereBetween('offering_date', [$start, $end])->sum('amount');
-            $tithes = Tithe::whereBetween('tithe_date', [$start, $end])->sum('amount');
-            $withdrawals = Withdrawal::whereBetween('withdrawal_date', [$start, $end])->sum('amount');
+            $deposits = Deposit::whereBetween('deposit_date', [$start, $end])->where('status', 'completed')->sum('amount');
+            $offerings = Offering::whereBetween('offering_date', [$start, $end])->where('status', 'completed')->sum('amount');
+            $tithes = Tithe::whereBetween('tithe_date', [$start, $end])->where('status', 'completed')->sum('amount');
+            $withdrawals = Withdrawal::whereBetween('withdrawal_date', [$start, $end])->where('status', 'completed')->sum('amount');
 
             $balance = ($deposits + $offerings + $tithes) - $withdrawals;
             $trend[] = $balance;

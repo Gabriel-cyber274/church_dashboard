@@ -21,6 +21,7 @@ class FinancialStatsWidget extends BaseWidget
         return auth()->user()?->hasAnyRole([
             'super_admin',
             'admin',
+            'finance',
         ]) ?? false;
     }
 
@@ -28,10 +29,10 @@ class FinancialStatsWidget extends BaseWidget
     {
         $dateRange = $this->getDateRange();
 
-        $deposits = Deposit::whereBetween('deposit_date', [$dateRange['start'], $dateRange['end']])->sum('amount');
-        $withdrawals = Withdrawal::whereBetween('withdrawal_date', [$dateRange['start'], $dateRange['end']])->sum('amount');
-        $offerings = Offering::whereBetween('offering_date', [$dateRange['start'], $dateRange['end']])->sum('amount');
-        $tithes = Tithe::whereBetween('tithe_date', [$dateRange['start'], $dateRange['end']])->sum('amount');
+        $deposits = Deposit::whereBetween('deposit_date', [$dateRange['start'], $dateRange['end']])->where('status', 'completed')->sum('amount');
+        $withdrawals = Withdrawal::whereBetween('withdrawal_date', [$dateRange['start'], $dateRange['end']])->where('status', 'completed')->sum('amount');
+        $offerings = Offering::whereBetween('offering_date', [$dateRange['start'], $dateRange['end']])->where('status', 'completed')->sum('amount');
+        $tithes = Tithe::whereBetween('tithe_date', [$dateRange['start'], $dateRange['end']])->where('status', 'completed')->sum('amount');
 
         $totalIncome = $deposits + $offerings + $tithes;
         $netBalance = $totalIncome - $withdrawals;
@@ -52,7 +53,7 @@ class FinancialStatsWidget extends BaseWidget
                 ->descriptionIcon('heroicon-o-heart')
                 ->color('success'),
 
-            Stat::make('Total Tithes', '₦' . number_format($tithes, 2))
+            Stat::make('Total Gratitudes', '₦' . number_format($tithes, 2))
                 ->description("For {$this->filter}")
                 ->descriptionIcon('heroicon-o-scale')
                 ->color('warning'),

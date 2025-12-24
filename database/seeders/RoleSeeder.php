@@ -27,8 +27,8 @@ class RoleSeeder extends Seeder
                 'description' => 'Head of Department',
             ],
             [
-                'name' => 'assistant_hod',
-                'description' => 'Assistant Head of Department',
+                'name' => 'finance',
+                'description' => 'Finance department with financial management permissions',
             ],
             [
                 'name' => 'pastors',

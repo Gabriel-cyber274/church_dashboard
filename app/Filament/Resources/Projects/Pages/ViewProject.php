@@ -20,7 +20,6 @@ class ViewProject extends ViewRecord
         return [
             EditAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
                 'super_admin',
-                'admin',
             ])),
         ];
     }

@@ -3,9 +3,12 @@
 namespace App\Filament\Resources\Deposits\Tables;
 
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\ForceDeleteBulkAction;
+use Filament\Actions\RestoreAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
@@ -15,13 +18,14 @@ use Filament\Tables\Filters\Filter;
 use Filament\Forms\Components\DatePicker;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\Select;
-
+use Filament\Tables\Columns\BadgeColumn;
 
 class DepositsTable
 {
     public static function configure(Table $table): Table
     {
         return $table
+            ->defaultSort('id', 'desc')
             ->columns([
                 TextColumn::make('member.full_name')->label('Member')->sortable(),
 
@@ -31,6 +35,14 @@ class DepositsTable
                 TextColumn::make('amount')
                     ->numeric()
                     ->sortable(),
+                BadgeColumn::make('status')
+                    ->sortable()
+                    ->colors([
+                        'warning' => 'pending',
+                        'success' => 'completed',
+                    ])
+                    ->label('Status')
+                    ->searchable(),
                 TextColumn::make('deposit_date')
                     ->date()
                     ->sortable(),
@@ -74,7 +86,20 @@ class DepositsTable
             ])
             ->recordActions([
                 ViewAction::make(),
-                EditAction::make(),
+                EditAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
+                    'super_admin',
+                    'finance',
+                ])),
+                DeleteAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
+                    'super_admin',
+                    'finance',
+                ])),
+                ForceDeleteAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
+                    'super_admin',
+                ])),
+                RestoreAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
+                    'super_admin',
+                ])),
 
             ])
             ->toolbarActions([

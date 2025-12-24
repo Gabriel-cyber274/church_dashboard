@@ -17,9 +17,16 @@ class EditWithdrawal extends EditRecord
     {
         return [
             ViewAction::make(),
-            DeleteAction::make(),
-            ForceDeleteAction::make(),
-            RestoreAction::make(),
+            DeleteAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
+                'super_admin',
+                'finance',
+            ])),
+            ForceDeleteAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
+                'super_admin',
+            ])),
+            RestoreAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
+                'super_admin',
+            ])),
         ];
     }
 }

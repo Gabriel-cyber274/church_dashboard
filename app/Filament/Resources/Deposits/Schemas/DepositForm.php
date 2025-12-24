@@ -50,6 +50,23 @@ class DepositForm
                     ->options(Project::all()->pluck('name', 'id'))
                     ->searchable(),
 
+
+                Select::make('status')
+                    ->label('Status')
+                    ->options(
+                        fn() => auth()->user()?->hasRole('super_admin')
+                            ? [
+                                'pending' => 'Pending',
+                                'completed' => 'Completed',
+                            ]
+                            : [
+                                'pending' => 'Pending',
+                            ]
+                    )
+                    ->default('pending')
+                    ->required()
+                    ->visible(fn() => auth()->user()?->hasAnyRole(['super_admin', 'finance'])),
+
                 TextInput::make('amount')
                     ->required()
                     ->numeric(),

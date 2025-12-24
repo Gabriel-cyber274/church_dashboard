@@ -14,6 +14,7 @@ class Offering extends Model
         'amount',
         'offering_date',
         'description',
+        'status',
     ];
 
     public function program()

@@ -17,6 +17,7 @@ class FinancialOverviewWidget extends ChartWidget
         return auth()->user()?->hasAnyRole([
             'super_admin',
             'admin',
+            'finance',
         ]) ?? false;
     }
 
@@ -39,10 +40,10 @@ class FinancialOverviewWidget extends ChartWidget
             $end = $month->copy()->endOfMonth();
 
             $labels[] = $month->format('M Y');
-            $depositsData[] = Deposit::whereBetween('deposit_date', [$start, $end])->sum('amount');
-            $withdrawalsData[] = Withdrawal::whereBetween('withdrawal_date', [$start, $end])->sum('amount');
-            $offeringsData[] = Offering::whereBetween('offering_date', [$start, $end])->sum('amount');
-            $tithesData[] = Tithe::whereBetween('tithe_date', [$start, $end])->sum('amount');
+            $depositsData[] = Deposit::whereBetween('deposit_date', [$start, $end])->where('status', 'completed')->sum('amount');
+            $withdrawalsData[] = Withdrawal::whereBetween('withdrawal_date', [$start, $end])->where('status', 'completed')->sum('amount');
+            $offeringsData[] = Offering::whereBetween('offering_date', [$start, $end])->where('status', 'completed')->sum('amount');
+            $tithesData[] = Tithe::whereBetween('tithe_date', [$start, $end])->where('status', 'completed')->sum('amount');
         }
 
         return [
@@ -63,7 +64,7 @@ class FinancialOverviewWidget extends ChartWidget
                     'backgroundColor' => '#10B981',
                 ],
                 [
-                    'label' => 'Tithes',
+                    'label' => 'Gratitudes',
                     'data' => $tithesData,
                     'backgroundColor' => '#F59E0B',
                 ],

@@ -17,8 +17,15 @@ class OfferingInfolist
 
                 TextEntry::make('amount')
                     ->numeric(),
+                TextEntry::make('status')
+                    ->badge()
+                    ->colors([
+                        'warning' => 'pending',
+                        'success' => 'completed',
+                    ]),
                 TextEntry::make('offering_date')
                     ->date(),
+
                 TextEntry::make('description'),
                 TextEntry::make('deleted_at')
                     ->dateTime(),

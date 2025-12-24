@@ -15,6 +15,7 @@ class Withdrawal extends Model
         'amount',
         'withdrawal_date',
         'description',
+        'status',
     ];
 
     public function program()

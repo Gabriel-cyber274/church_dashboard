@@ -18,6 +18,7 @@ class Program extends Model
         'location',
         'is_budgeted',
         'budget',
+        'flier_url'
     ];
 
     public function banks()
