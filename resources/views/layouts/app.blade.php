@@ -31,6 +31,13 @@
         .navbar-brand {
             font-weight: 600;
             letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+        }
+
+        .navbar-logo {
+            height: 40px;
+            margin-right: 12px;
         }
 
         .container {
@@ -173,6 +180,10 @@
             .bank-card strong {
                 min-width: 140px;
             }
+
+            .navbar-logo {
+                height: 32px;
+            }
         }
 
 
@@ -207,6 +218,7 @@
     <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: var(--primary-color);">
         <div class="container">
             <a class="navbar-brand" href="{{ route('contributions.index') }}">
+                <img src="{{ asset('images/logo.png') }}" alt="Church Logo" class="navbar-logo">
                 Church Contributions
             </a>
         </div>

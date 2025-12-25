@@ -4,10 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+
 
 class Member extends Model
 {
-    use SoftDeletes;
+    use HasFactory, Notifiable, SoftDeletes;
+
 
     /**
      * The attributes that are mass assignable.
@@ -24,6 +28,7 @@ class Member extends Model
         'gender',
         'marital_status',
     ];
+
 
 
 

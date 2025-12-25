@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 
 class PublicContributionController extends Controller
@@ -131,10 +132,12 @@ class PublicContributionController extends Controller
                 if ($validated['type'] === 'project') {
                     $pledge = Pledge::where('member_id', $member->id)
                         ->where('project_id', $validated['id'])
+                        ->where('status', 'pending')
                         ->first();
                 } else {
                     $pledge = Pledge::where('member_id', $member->id)
                         ->where('program_id', $validated['id'])
+                        ->where('status', 'pending')
                         ->first();
                 }
 
@@ -191,14 +194,12 @@ class PublicContributionController extends Controller
                 $depositData['program_id'] = $validated['id'];
             }
 
-            Deposit::create($depositData);
-
-            // Update pledge status if applicable
-            if ($isPledge && $pledge) {
-                $pledge->update(['status' => 'completed']);
-            }
+            $deposit = Deposit::create($depositData);
 
             DB::commit();
+
+            // Send email notification to admin
+            $this->sendDepositNotification($deposit, $member, $contributionItem, $validated, $pledge);
 
             // Success message
             $message = 'Thank you, ' . $validated['name'] . '! Your contribution of ₦' .
@@ -243,5 +244,41 @@ class PublicContributionController extends Controller
         $description .= "Method: Online Portal ";
 
         return $description;
+    }
+
+
+    private function sendDepositNotification(Deposit $deposit, Member $member, $contributionItem, array $data, ?Pledge $pledge = null)
+    {
+        try {
+            $adminEmail = config('app.admin_email');
+
+            if (empty($adminEmail)) {
+                Log::warning('Admin email not configured. Skipping email notification.');
+                return;
+            }
+
+            $typeLabel = $data['type'] === 'project' ? 'Project' : 'Program';
+            $itemName = $contributionItem ? $contributionItem->name : 'Unknown ' . $typeLabel;
+
+            $mailData = [
+                'deposit' => $deposit,
+                'pledge' => $pledge,
+                'member' => $member,
+                'contributionItem' => $contributionItem,
+                'typeLabel' => $typeLabel,
+                'itemName' => $itemName,
+                'isPledge' => $data['is_pledge'] ?? false,
+                'logoPath' => public_path('images/logo.png'),
+                'logoUrl' => asset('images/logo.png'),
+            ];
+
+            // Send email
+            Mail::to($adminEmail)->send(new \App\Mail\DepositNotification($mailData));
+
+            Log::info('Deposit notification email sent to admin: ' . $adminEmail);
+        } catch (\Exception $e) {
+            Log::error('Failed to send deposit notification email: ' . $e->getMessage());
+            // Don't throw the error to avoid breaking the main flow
+        }
     }
 }

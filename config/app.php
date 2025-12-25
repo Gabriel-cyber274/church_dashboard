@@ -54,6 +54,9 @@ return [
 
     'url' => env('APP_URL', 'http://localhost'),
 
+
+    'admin_email' => env('ADMIN_EMAIL', "gab@gmail.com"),
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone
