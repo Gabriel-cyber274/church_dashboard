@@ -5,8 +5,10 @@ namespace App\Filament\Resources\Members\Pages;
 use App\Filament\Resources\Members\MemberResource;
 use App\Mail\MemberNotification;
 use App\Models\Member;
+use App\Models\Report;
 use Filament\Actions\EditAction;
 use Filament\Actions\Action;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
@@ -74,9 +76,45 @@ class ViewMember extends ViewRecord
                 ->modalWidth('lg')
                 ->requiresConfirmation(),
 
+            Action::make('createSubmission')
+                ->label('Report Submission')
+                ->icon('heroicon-o-plus')
+                ->form([
+                    Select::make('report_id')
+                        ->label('Select Report')
+                        ->searchable()
+                        ->preload()
+                        ->getSearchResultsUsing(function (string $search): array {
+                            $member = $this->getRecord();
+
+                            return Report::whereDoesntHave('departments') // Only reports without departments
+                                ->where('title', 'like', "%{$search}%")
+                                ->limit(50)
+                                ->pluck('title', 'id')
+                                ->toArray();
+                        })
+                        ->getOptionLabelUsing(function ($value): ?string {
+                            return Report::find($value)?->title;
+                        })
+                        ->required(),
+                ])
+                ->action(function (array $data): void {
+                    $member = $this->getRecord();
+                    $reportId = $data['report_id'];
+
+                    $url = route('submissions.create', $reportId) . '?member_id=' . $member->id;
+
+                    // Open in new tab
+                    $this->js("window.open('{$url}', '_blank')");
+                })
+                ->modalHeading('Create a Submission for Member')
+                ->modalSubmitActionLabel('Go')
+                ->modalWidth('md')->visible(fn() => auth()->user()?->doesntHaveAnyRole([
+                    'finance'
+                ])),
+
             EditAction::make()->visible(fn() => auth()->user()?->doesntHaveAnyRole([
-                'hod',
-                'assistant_hod',
+                'finance',
             ])),
         ];
     }

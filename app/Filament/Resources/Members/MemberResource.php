@@ -13,6 +13,7 @@ use App\Filament\Resources\Members\RelationManagers\DepartmentsRelationManager;
 use App\Filament\Resources\Members\RelationManagers\DepositsRelationManager;
 use App\Filament\Resources\Members\RelationManagers\PledgesRelationManager;
 use App\Filament\Resources\Members\RelationManagers\ProgramsCoordinatedRelationManager;
+use App\Filament\Resources\Members\RelationManagers\ReportSubmissionsRelationManager;
 use App\Models\Member;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -53,6 +54,7 @@ class MemberResource extends Resource
             ProgramsCoordinatedRelationManager::class,
             PledgesRelationManager::class,
             DepositsRelationManager::class,
+            ReportSubmissionsRelationManager::class
         ];
     }
 

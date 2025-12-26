@@ -14,6 +14,10 @@
                         <form method="POST" action="{{ route('submissions.store', $report) }}">
                             @csrf
 
+                            @if (request()->query('member_id'))
+                                <input type="hidden" name="member_id" value="{{ request()->query('member_id') }}">
+                            @endif
+
                             @foreach ($report->questions as $question)
                                 @php
                                     // Convert comma-separated options string to array

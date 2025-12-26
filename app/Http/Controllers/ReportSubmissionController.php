@@ -40,10 +40,15 @@ class ReportSubmissionController extends Controller
             }
         }
 
+        if ($request->input('member_id')) {
+            $report->members()->sync([$request->input('member_id')]);
+        }
+
         // Create submission
         $submission = ReportSubmission::create([
             'report_id' => $report->id,
             'user_id' => Auth::id(),
+            'member_id' =>  $request->input('member_id') ?? null,
         ]);
 
         // Save answers

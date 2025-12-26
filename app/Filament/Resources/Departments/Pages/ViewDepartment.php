@@ -201,7 +201,8 @@ class ViewDepartment extends ViewRecord
                 ->modalSubmitActionLabel('Go')
                 ->modalWidth('md')->visible(fn() => auth()->user()->is_department_leader && auth()->user()->department_id == $this->getRecord()->id),
 
-            EditAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
+            
+                EditAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
                 'super_admin',
                 'admin',
                 'pastors'

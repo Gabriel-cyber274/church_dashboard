@@ -26,27 +26,44 @@ class ReportSubmissionsRelationManager extends RelationManager
         return $table
             ->defaultSort('created_at', 'desc')
             ->modifyQueryUsing(function (Builder $query) use ($user) {
-                // Filter submissions if user is department leader
+                if ($user->hasAnyRole(['super_admin', 'admin'])) {
+                    // Super admin / admin sees everything
+                    return $query;
+                }
+
                 if ($user->is_department_leader && $user->department_id) {
+                    // Department leader sees submissions from their department
                     $query->whereHas('user', function ($q) use ($user) {
                         $q->where('department_id', $user->department_id);
                     });
+                } else {
+                    $query->where('user_id', $user->id);
                 }
+
                 return $query;
             })
+
             ->columns([
                 TextColumn::make('id')->label('ID')->sortable(),
                 TextColumn::make('user.name')
                     ->label('Submitted By')
                     ->sortable()
                     ->searchable(),
-                TextColumn::make('user.department.name')
-                    ->label('Department')
+                TextColumn::make('member.full_name')
+                    ->label('Member')
+                    ->formatStateUsing(fn($state, ReportSubmission $record) => $record->member_id ? $state : 'N/A / Department Submission')
                     ->sortable()
                     ->searchable(),
+
+                TextColumn::make('user.department.name')
+                    ->label('Department')
+                    ->formatStateUsing(fn($state, ReportSubmission $record) => $record->member_id ? 'N/A / Member Submission' : $state ?? 'N/A')
+                    ->sortable()
+                    ->searchable(),
+
                 TextColumn::make('user.is_department_leader')
                     ->label('Dept. Leader?')
-                    ->formatStateUsing(fn($state) => $state ? 'Yes' : 'No')
+                    ->formatStateUsing(fn($state, ReportSubmission $record) => $record->member_id ? 'N/A' : ($state ? 'Yes' : 'No'))
                     ->sortable(),
                 TextColumn::make('created_at')
                     ->label('Submitted At')

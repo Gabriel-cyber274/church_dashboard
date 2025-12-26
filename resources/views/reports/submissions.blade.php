@@ -9,12 +9,12 @@
 
         <div class="card">
             <div class="card-body">
-                <table class="table">
+                <table class="table table-striped">
                     <thead>
                         <tr>
                             <th>ID</th>
                             <th>Submitted By</th>
-                            <th>Department</th>
+                            <th>Department / Member</th>
                             <th>Dept. Leader?</th>
                             <th>Submitted At</th>
                             <th>Actions</th>
@@ -25,22 +25,38 @@
                             <tr>
                                 <td>{{ $submission->id }}</td>
                                 <td>{{ $submission->user->name ?? 'N/A' }}</td>
-                                <td>{{ $submission->user->department->name ?? 'N/A' }}</td>
+
+                                {{-- Show member if exists, else department --}}
                                 <td>
-                                    @if ($submission->user)
+                                    @if ($submission->member_id)
+                                        {{ $submission->member->full_name ?? 'N/A' }}
+                                    @else
+                                        {{ $submission->user->department->name ?? 'N/A' }}
+                                    @endif
+                                </td>
+
+                                {{-- Dept leader only relevant if no member --}}
+                                <td>
+                                    @if (!$submission->member_id && $submission->user)
                                         {{ $submission->user->is_department_leader ? 'Yes' : 'No' }}
                                     @else
                                         N/A
                                     @endif
                                 </td>
+
                                 <td>{{ $submission->created_at->format('Y-m-d H:i') }}</td>
+
                                 <td>
                                     <a href="{{ route('reports.submissions.show', [$report, $submission]) }}"
-                                        class="btn btn-sm btn-info">View Answers</a>
+                                        class="btn btn-sm btn-info">
+                                        View Answers
+                                    </a>
 
                                     @if (Auth::user()->hasAnyRole(['super_admin', 'admin']))
                                         <a href="{{ route('submissions.edit', [$report, $submission]) }}"
-                                            class="btn btn-sm btn-warning">Edit</a>
+                                            class="btn btn-sm btn-warning">
+                                            Edit
+                                        </a>
 
                                         <form action="{{ route('submissions.destroy', [$report, $submission]) }}"
                                             method="POST" class="d-inline"

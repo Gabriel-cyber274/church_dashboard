@@ -19,14 +19,19 @@
             <div class="card-body">
                 <p><strong>Report:</strong> {{ $report->title }}</p>
                 <p><strong>Submitted By:</strong> {{ $submission->user->name ?? 'N/A' }}</p>
-                <p><strong>Department:</strong> {{ $submission->user->department->name ?? 'N/A' }}</p>
-                <p><strong>Dept. Leader?:</strong>
-                    @if ($submission->user)
-                        {{ $submission->user->is_department_leader ? 'Yes' : 'No' }}
-                    @else
-                        N/A
-                    @endif
-                </p>
+                @if (is_null($submission->member_id))
+                    <p><strong>Department:</strong> {{ $submission->user->department->name ?? 'N/A' }}</p>
+                    <p><strong>Dept. Leader?:</strong>
+                        @if ($submission->user)
+                            {{ $submission->user->is_department_leader ? 'Yes' : 'No' }}
+                        @else
+                            N/A
+                        @endif
+                    </p>
+                @endif
+                @if (!is_null($submission->member_id))
+                    <p><strong>member:</strong> {{ $submission->member->full_name ?? 'N/A' }}</p>
+                @endif
                 <p><strong>Submitted On:</strong> {{ $submission->created_at->format('F j, Y H:i') }}</p>
                 @if ($submission->updated_at != $submission->created_at)
                     <p><strong>Last Updated:</strong> {{ $submission->updated_at->format('F j, Y H:i') }}</p>
