@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\Departments\Tables;
+namespace App\Filament\Resources\Reports\Tables;
 
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
@@ -12,36 +12,19 @@ use Filament\Actions\RestoreAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Database\Eloquent\Builder;
 
-class DepartmentsTable
+class ReportsTable
 {
     public static function configure(Table $table): Table
     {
-        $user = Auth::user();
-
         return $table
-            ->defaultSort('id', 'desc')
-            ->modifyQueryUsing(function (Builder $query) use ($user) {
-                // If user has department_id and is department leader, filter by department
-                if ($user->is_department_leader && $user->department_id) {
-                    $query->where('id', $user->department_id);
-                }
-                return $query;
-            })
+            ->defaultSort('created_at', 'desc')
             ->columns([
-                TextColumn::make('name')
+                TextColumn::make('title')
                     ->searchable(),
                 TextColumn::make('description')
-                    ->limit(50)
-                    ->wrap(),
-                TextColumn::make('deleted_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->searchable(),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -52,29 +35,25 @@ class DepartmentsTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                TrashedFilter::make(),
+                //
             ])
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
                     'super_admin',
                     'admin',
-                    'pastors'
                 ])),
                 DeleteAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
                     'super_admin',
                     'admin',
-                    'pastors'
                 ])),
                 ForceDeleteAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
                     'super_admin',
                     'admin',
-                    'pastors'
                 ])),
                 RestoreAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
                     'super_admin',
                     'admin',
-                    'pastors'
                 ])),
             ])
             ->toolbarActions([
@@ -85,7 +64,6 @@ class DepartmentsTable
                 ])->visible(fn() => auth()->user()?->hasAnyRole([
                     'super_admin',
                     'admin',
-                    'pastors'
                 ])),
             ]);
     }

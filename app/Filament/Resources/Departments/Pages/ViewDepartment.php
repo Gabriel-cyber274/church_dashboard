@@ -6,6 +6,7 @@ use App\Filament\Resources\Departments\DepartmentResource;
 use App\Mail\MemberNotification;
 use App\Models\Department;
 use App\Models\Member;
+use App\Models\Report;
 use Filament\Actions\EditAction;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Checkbox;
@@ -164,11 +165,48 @@ class ViewDepartment extends ViewRecord
                 ->modalWidth('lg')
                 ->requiresConfirmation(),
 
+
+            Action::make('createSubmission')
+                ->label('Report Submission')
+                ->icon('heroicon-o-plus')
+                ->form([
+                    Select::make('report_id')
+                        ->label('Select Report')
+                        ->searchable()
+                        ->preload()
+                        ->getSearchResultsUsing(function (string $search): array {
+                            return $this->getRecord()
+                                ->reports()
+                                ->where('title', 'like', "%{$search}%")
+                                ->limit(50)
+                                ->pluck('title', 'reports.id')
+                                ->toArray();
+                        })
+                        ->getOptionLabelUsing(function ($value): ?string {
+                            return $this->getRecord()
+                                ->reports()
+                                ->where('reports.id', $value)
+                                ->value('title');
+                        })
+                        ->required(),
+                ])
+                ->action(function (array $data): void {
+                    $reportId = $data['report_id'];
+                    $report = Report::findOrFail($reportId);
+
+                    $url = route('submissions.create', $report->id);
+                    $this->js("window.open('{$url}', '_blank')");
+                })
+                ->modalHeading('Create a Submission')
+                ->modalSubmitActionLabel('Go')
+                ->modalWidth('md')->visible(fn() => auth()->user()->is_department_leader && auth()->user()->department_id == $this->getRecord()->id),
+
             EditAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
                 'super_admin',
                 'admin',
                 'pastors'
             ])),
+
         ];
     }
 }

@@ -10,6 +10,7 @@ use App\Filament\Resources\Departments\Schemas\DepartmentForm;
 use App\Filament\Resources\Departments\Schemas\DepartmentInfolist;
 use App\Filament\Resources\Departments\Tables\DepartmentsTable;
 use App\Filament\Resources\Departments\RelationManagers\MembersRelationManager;
+use App\Filament\Resources\Departments\RelationManagers\ReportsRelationManager;
 use App\Models\Department;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -48,6 +49,7 @@ class DepartmentResource extends Resource
         return [
             //
             MembersRelationManager::class,
+            ReportsRelationManager::class
         ];
     }
 

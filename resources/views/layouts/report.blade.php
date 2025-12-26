@@ -217,9 +217,10 @@
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: var(--primary-color);">
         <div class="container">
-            <a class="navbar-brand" href="{{ route('contributions.index') }}">
+            {{-- <a class="navbar-brand" href="{{ route('contributions.index') }}"> --}}
+            <a class="navbar-brand">
                 <img src="{{ asset('images/logo.png') }}" alt="Church Logo" class="navbar-logo">
-                Church Contributions
+                Report
             </a>
         </div>
     </nav>

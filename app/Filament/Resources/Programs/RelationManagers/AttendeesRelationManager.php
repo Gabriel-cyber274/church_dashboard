@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Programs\RelationManagers;
 
 use App\Filament\Resources\ProgrammeAttendees\ProgrammeAttendeeResource;
 use App\Models\ProgrammeAttendee;
+use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -44,6 +45,16 @@ class AttendeesRelationManager extends RelationManager
                 TextColumn::make('phone_number')->label('Guest Phone'),
             ])
             ->headerActions([
+
+                Action::make('registrationUrl')
+                    ->label('Open Registration Page')
+                    ->icon('heroicon-o-qr-code')
+                    ->color('gray')
+                    ->url(fn() => route('programme-attendees.index', $this->getOwnerRecord()->id))
+                    ->openUrlInNewTab(),
+
+
+
                 CreateAction::make('createAttendee')
                     ->modalHeading(fn() => 'Add Attendee for ' . $this->getOwnerRecord()->name)
                     ->form([

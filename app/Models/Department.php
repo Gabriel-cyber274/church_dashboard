@@ -31,4 +31,10 @@ class Department extends Model
     {
         return $this->hasMany(User::class);
     }
+
+    public function reports()
+    {
+        return $this->belongsToMany(Report::class)
+            ->withTimestamps();
+    }
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Resources\Members\RelationManagers;
+namespace App\Filament\Resources\Reports\RelationManagers;
 
 use App\Filament\Resources\Departments\DepartmentResource;
 use App\Models\Department;
@@ -25,11 +25,19 @@ class DepartmentsRelationManager extends RelationManager
     protected static ?string $recordTitleAttribute = 'name';
 
 
+
     public function table(Table $table): Table
     {
+        $user = Auth::user();
         return $table
             ->defaultSort('departments.id', 'desc')
-
+            ->modifyQueryUsing(function (Builder $query) use ($user) {
+                // If user has department_id and is department leader, filter by department
+                if ($user->is_department_leader && $user->department_id) {
+                    $query->where('departments.id', $user->department_id);
+                }
+                return $query;
+            })
             ->columns([
                 \Filament\Tables\Columns\TextColumn::make('name')
                     ->label('Department Name')

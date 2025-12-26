@@ -89,4 +89,10 @@ class User extends Authenticatable
     {
         return ! $this->hasAnyRole($roles);
     }
+
+
+    public function submissions()
+    {
+        return $this->hasMany(\App\Models\ReportSubmission::class);
+    }
 }

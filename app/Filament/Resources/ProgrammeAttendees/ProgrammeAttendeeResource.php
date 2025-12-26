@@ -6,6 +6,7 @@ use App\Filament\Resources\ProgrammeAttendees\Pages\CreateProgrammeAttendee;
 use App\Filament\Resources\ProgrammeAttendees\Pages\EditProgrammeAttendee;
 use App\Filament\Resources\ProgrammeAttendees\Pages\ListProgrammeAttendees;
 use App\Filament\Resources\ProgrammeAttendees\Pages\ViewProgrammeAttendee;
+use App\Filament\Resources\ProgrammeAttendees\RelationManagers\MembersRelationManager;
 use App\Filament\Resources\ProgrammeAttendees\Schemas\ProgrammeAttendeeForm;
 use App\Filament\Resources\ProgrammeAttendees\Schemas\ProgrammeAttendeeInfolist;
 use App\Filament\Resources\ProgrammeAttendees\Tables\ProgrammeAttendeesTable;
@@ -51,6 +52,7 @@ class ProgrammeAttendeeResource extends Resource
     {
         return [
             //
+            MembersRelationManager::class
         ];
     }
 

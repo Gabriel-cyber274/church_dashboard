@@ -65,4 +65,16 @@ class Member extends Model
     {
         return $this->hasMany(Deposit::class);
     }
+
+    public function reports()
+    {
+        return $this->belongsToMany(Report::class)
+            ->withTimestamps();
+    }
+
+
+    public function submissions()
+    {
+        return $this->hasMany(\App\Models\ReportSubmission::class);
+    }
 }
