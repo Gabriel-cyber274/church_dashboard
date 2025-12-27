@@ -65,10 +65,15 @@ class WithdrawalsRelationManager extends RelationManager
                 TextColumn::make('project.name')->label('Project'),
             ])
             ->headerActions([
-                CreateAction::make('createWithdrawal')->visible(fn() => auth()->user()?->hasAnyRole([
-                    'super_admin',
-                    'finance',
-                ]))
+                CreateAction::make('createWithdrawal')
+                    ->visible(function () {
+                        // Check if user has permission AND if program has deposits
+                        $user = auth()->user();
+                        $hasPermission = $user?->hasAnyRole(['super_admin', 'finance']);
+                        $hasDeposits = $this->getOwnerRecord()->deposits()->exists();
+
+                        return $hasPermission && $hasDeposits;
+                    })
                     ->modalHeading(fn() => 'Add Withdrawal for ' . $this->getOwnerRecord()->name)
                     ->form([
                         // program_id is hidden and prefilled
