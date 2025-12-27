@@ -25,6 +25,7 @@ class DepositInfolist
                         'warning' => 'pending',
                         'success' => 'completed',
                     ]),
+                TextEntry::make('reference'),
                 TextEntry::make('description'),
                 TextEntry::make('deleted_at')
                     ->dateTime(),

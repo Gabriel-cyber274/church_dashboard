@@ -72,6 +72,8 @@ class DepositForm
                     ->numeric(),
                 DatePicker::make('deposit_date')
                     ->required(),
+                TextInput::make('reference')
+                    ->default(null),
                 Textarea::make('description')
                     ->default(null),
             ]);

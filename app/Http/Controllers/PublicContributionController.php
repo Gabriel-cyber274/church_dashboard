@@ -13,12 +13,161 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use App\Services\PaystackService;
 
 class PublicContributionController extends Controller
 {
     /**
      * List all projects and programs
      */
+
+    public function initiatePaystack(Request $request, PaystackService $paystack)
+    {
+        $validated = $request->validate([
+            'email' => 'required|email',
+            'phone_number' => 'required|string|max:20',
+            'amount' => 'required|numeric|min:100',
+            'type' => 'required|in:program,project',
+            'id' => 'required|integer',
+        ]);
+
+        $response = $paystack->initializeTransaction(
+            $validated['email'],
+            $validated['amount'] * 100, // convert to kobo
+            route('paystack.callback'),
+            [
+                'type' => $validated['type'],
+                'id' => $validated['id'],
+                'phone_number' => $validated['phone_number'],
+            ]
+        );
+
+        return redirect($response['data']['authorization_url']);
+    }
+
+
+    public function handlePaystackCallback(Request $request, PaystackService $paystack)
+    {
+        $reference = $request->query('reference');
+
+        if (!$reference) {
+            return redirect()->route('contributions.index')
+                ->with('error', 'Payment reference missing');
+        }
+
+        $response = $paystack->verifyTransaction($reference);
+
+        if ($response['data']['status'] !== 'success') {
+            return redirect()->route('contributions.index')
+                ->with('error', 'Payment failed');
+        }
+
+        $data = $response['data'];
+        $metadata = $data['metadata'] ?? [];
+
+        DB::beginTransaction();
+
+        try {
+            // Find or create member
+            $member = Member::where('email', $data['customer']['email'])
+                ->orWhere('phone_number', $metadata['phone_number'] ?? null)
+                ->first();
+
+            if (!$member) {
+                $member = Member::create([
+                    'email' => $data['customer']['email'],
+                    'phone_number' => $metadata['phone_number'] ?? null,
+                    'first_name' => 'Online',
+                    'last_name' => 'Donor',
+                ]);
+            }
+
+            // Initialize program/project variables
+            $program = $project = null;
+
+            if (($metadata['type'] ?? null) === 'program') {
+                $program = Program::find($metadata['id']);
+            } elseif (($metadata['type'] ?? null) === 'project') {
+                $project = Project::find($metadata['id']);
+            }
+
+            // Build description
+            $typeLabel = ($metadata['type'] ?? 'unknown') === 'program' ? 'Program' : 'Project';
+            $itemName = $program?->name ?? $project?->name ?? 'Unknown ' . $typeLabel;
+
+            $description = sprintf(
+                'Online Paystack Contribution: %s | Donor: %s (%s) | Amount: ₦%s | Reference: %s',
+                $typeLabel . ': ' . $itemName,
+                $data['customer']['email'],
+                $metadata['phone_number'] ?? 'N/A',
+                number_format($data['amount'] / 100, 2),
+                $reference
+            );
+
+            // Prepare deposit data
+            $depositData = [
+                'member_id' => $member->id,
+                'amount' => $data['amount'] / 100,
+                'deposit_date' => now(),
+                'status' => 'completed',
+                'description' => $description,
+                'reference' => $reference,
+            ];
+
+            // Assign program/project ID and redirect route
+            $redirectRoute = route('contributions.index');
+            $contributionItem = null;
+
+            if ($program) {
+                $depositData['program_id'] = $program->id;
+                $redirectRoute = route('contributions.program.show', $program);
+                $contributionItem = $program;
+            } elseif ($project) {
+                $depositData['project_id'] = $project->id;
+                $redirectRoute = route('contributions.project.show', $project);
+                $contributionItem = $project;
+            }
+
+            // Create deposit
+            $deposit = Deposit::create($depositData);
+
+            // Send email to admin
+            $adminEmail = config('app.admin_email');
+            if (!empty($adminEmail)) {
+                $logoPath = public_path('images/logo.png');
+                $logoUrl = asset('images/logo.png');
+
+                Mail::to($adminEmail)->send(new \App\Mail\DepositNotification([
+                    'deposit' => $deposit,
+                    'member' => $member,
+                    'contributionItem' => $contributionItem,
+                    'itemName' => $itemName,
+                    'isPledge' => false,
+                    'pledge' => null,
+                    'description' => $description,
+                    'phone_number' => $metadata['phone_number'] ?? 'N/A',
+                    'typeLabel' => $typeLabel,
+                    'logoPath' => $logoPath,
+                    'logoUrl' => $logoUrl,
+                ]));
+            }
+
+            DB::commit();
+
+            return redirect($redirectRoute)
+                ->with('success', 'Payment successful. Thank you!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Paystack callback error: ' . $e->getMessage());
+
+            return redirect()->route('contributions.index')
+                ->with('error', 'Payment completed but saving failed.');
+        }
+    }
+
+
+
+
     public function index()
     {
         // Filter projects by status = 'pending'

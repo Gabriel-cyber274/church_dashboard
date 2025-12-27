@@ -18,6 +18,7 @@ class Deposit extends Model
         'deposit_date',
         'description',
         'status',
+        'reference'
     ];
 
     protected $casts = [

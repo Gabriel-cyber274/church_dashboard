@@ -454,7 +454,7 @@
             @endif
 
             <div class="amount">
-                ${{ number_format($withdrawal->amount, 2) }}
+                ₦{{ number_format($withdrawal->amount, 2) }}
             </div>
 
             <div

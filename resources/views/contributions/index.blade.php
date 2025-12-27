@@ -31,7 +31,7 @@
 
                                     <a href="{{ route('contributions.program.show', $program) }}"
                                         class="btn btn-primary mt-auto">
-                                        View Banking Details →
+                                        View Details →
                                     </a>
                                 </div>
                             </div>
@@ -66,7 +66,7 @@
 
                                     <a href="{{ route('contributions.project.show', $project) }}"
                                         class="btn btn-primary mt-auto">
-                                        View Banking Details →
+                                        View Details →
                                     </a>
                                 </div>
                             </div>

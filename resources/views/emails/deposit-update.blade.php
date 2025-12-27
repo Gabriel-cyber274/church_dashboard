@@ -326,7 +326,7 @@
             @endif
 
             <div class="amount">
-                {{ number_format($deposit->amount, 2) }}
+                ₦{{ number_format($deposit->amount, 2) }}
             </div>
 
             <div class="info-box {{ $action === 'deleted' || $action === 'force deleted' ? 'deleted' : '' }}">

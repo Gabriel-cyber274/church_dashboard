@@ -396,7 +396,7 @@
             @endif
 
             <div class="amount">
-                {{ number_format($tithe->amount, 2) }}
+                ₦{{ number_format($tithe->amount, 2) }}
             </div>
 
             <div

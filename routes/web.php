@@ -38,6 +38,14 @@ Route::post('/contributions/confirm', [PublicContributionController::class, 'con
     ->name('contributions.confirm');
 
 
+// Paystack routes
+Route::post('/paystack/initiate', [PublicContributionController::class, 'initiatePaystack'])->name('contributions.paystack.initiate');
+Route::get('/paystack/callback', [PublicContributionController::class, 'handlePaystackCallback'])->name('paystack.callback');
+
+// Pledge routes
+// Route::post('/pledges', [PublicContributionController::class, 'store'])->name('pledges.store');
+
+
 
 
 Route::get('/members/create', [MemberController::class, 'create'])->name('members.create');

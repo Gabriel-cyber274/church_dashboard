@@ -46,6 +46,8 @@ class DepositsTable
                 TextColumn::make('deposit_date')
                     ->date()
                     ->sortable(),
+                TextColumn::make('reference')
+                    ->searchable(),
                 TextColumn::make('description')
                     ->searchable(),
                 TextColumn::make('deleted_at')
