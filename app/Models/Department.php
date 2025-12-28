@@ -37,4 +37,9 @@ class Department extends Model
         return $this->belongsToMany(Report::class)
             ->withTimestamps();
     }
+
+    public function departmentRoles()
+    {
+        return $this->hasMany(DepartmentRole::class);
+    }
 }

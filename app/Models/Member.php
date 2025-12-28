@@ -77,4 +77,9 @@ class Member extends Model
     {
         return $this->hasMany(\App\Models\ReportSubmission::class);
     }
+
+    public function departmentRoles()
+    {
+        return $this->hasMany(DepartmentRole::class);
+    }
 }

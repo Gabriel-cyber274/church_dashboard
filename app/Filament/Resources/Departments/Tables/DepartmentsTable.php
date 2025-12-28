@@ -59,22 +59,24 @@ class DepartmentsTable
                 EditAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
                     'super_admin',
                     'admin',
+                    'hod',
                     'pastors'
                 ])),
                 DeleteAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
                     'super_admin',
                     'admin',
+                    'hod',
                     'pastors'
                 ])),
                 ForceDeleteAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
                     'super_admin',
                     'admin',
-                    'pastors'
+                    'hod',
                 ])),
                 RestoreAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
                     'super_admin',
                     'admin',
-                    'pastors'
+                    'hod',
                 ])),
             ])
             ->toolbarActions([
@@ -85,7 +87,7 @@ class DepartmentsTable
                 ])->visible(fn() => auth()->user()?->hasAnyRole([
                     'super_admin',
                     'admin',
-                    'pastors'
+                    'hod',
                 ])),
             ]);
     }
