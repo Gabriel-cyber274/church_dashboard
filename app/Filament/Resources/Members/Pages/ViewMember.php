@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Members\Pages;
 
 use App\Filament\Resources\Members\MemberResource;
+use App\Filament\Resources\Members\Widgets\MemberDepositStats;
 use App\Mail\MemberNotification;
 use App\Models\Member;
 use App\Models\Report;
@@ -18,6 +19,9 @@ use Illuminate\Support\Facades\Mail;
 class ViewMember extends ViewRecord
 {
     protected static string $resource = MemberResource::class;
+
+
+    protected $queryString = ['activeRelationManager'];
 
     protected function getHeaderActions(): array
     {
@@ -117,5 +121,20 @@ class ViewMember extends ViewRecord
                 'finance',
             ])),
         ];
+    }
+
+
+    protected function getFooterWidgets(): array
+    {
+        // Check if we're on the Pledges tab (index 2)
+        if ($this->activeRelationManager === '3') {
+            return [
+                MemberDepositStats::class,
+            ];
+        }
+
+
+
+        return [];
     }
 }
