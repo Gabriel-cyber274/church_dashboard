@@ -35,6 +35,7 @@
                             <th>ID</th>
                             <th>Name</th>
                             <th>Phone Number</th>
+                            <th>Email</th>
                             <th>Attendance Time</th>
                         </tr>
                     </thead>
@@ -44,6 +45,8 @@
                                 <td>{{ $attendees->count() - $index }}</td>
                                 <td>{{ $attendee->member_id ? $attendee->member->full_name : $attendee->name }}</td>
                                 <td>{{ $attendee->member_id ? $attendee->member->phone_number : $attendee->phone_number }}
+                                </td>
+                                <td>{{ $attendee->member_id ? $attendee->member->email : $attendee->email }}
                                 </td>
                                 <td>{{ \Carbon\Carbon::parse($attendee->attendance_time)->format('M d, Y H:i') }}</td>
                             </tr>

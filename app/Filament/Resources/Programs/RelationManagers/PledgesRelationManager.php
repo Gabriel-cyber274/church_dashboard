@@ -23,6 +23,7 @@ use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Actions\ViewAction;
+use Filament\Forms\Components\Textarea;
 use Filament\Tables\Columns\BadgeColumn;
 use Filament\Tables\Filters\TrashedFilter;
 
@@ -86,12 +87,6 @@ class PledgesRelationManager extends RelationManager
                             ->searchable()
                             ->required(),
 
-                        Select::make('project_id')
-                            ->label('Project')
-                            ->options(\App\Models\Project::all()->pluck('name', 'id'))
-                            ->searchable(),
-                        // ->required(),
-
                         TextInput::make('amount')->required()->numeric(),
                         DatePicker::make('pledge_date')->required(),
                         Select::make('status')
@@ -101,8 +96,11 @@ class PledgesRelationManager extends RelationManager
                             ])
                             ->default('pending')
                             ->required(),
+                        Textarea::make('note')->default(null),
                         TextInput::make('name')->default(null),
                         TextInput::make('phone_number')->tel()->default(null),
+                        TextInput::make('email')
+                            ->default(null),
                     ])
                     ->action(function ($data) {
                         // create pledge for this program
@@ -165,11 +163,6 @@ class PledgesRelationManager extends RelationManager
                             ->searchable()
                             ->required(),
 
-                        Select::make('project_id')
-                            ->label('Project')
-                            ->options(\App\Models\Project::all()->pluck('name', 'id'))
-                            ->searchable(),
-
                         TextInput::make('amount')->required()->numeric(),
                         DatePicker::make('pledge_date')->required(),
                         Select::make('status')
@@ -178,8 +171,12 @@ class PledgesRelationManager extends RelationManager
                                 'completed' => 'Completed',
                             ])
                             ->required(),
+                        Textarea::make('note')->default(null),
+
                         TextInput::make('name')->default(null),
                         TextInput::make('phone_number')->tel()->default(null),
+                        TextInput::make('email')
+                            ->default(null),
                     ]),
                 DeleteAction::make()->visible(fn() => auth()->user()?->hasAnyRole([
                     'super_admin',

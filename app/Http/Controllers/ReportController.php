@@ -39,10 +39,18 @@ class ReportController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        $submissions = $report->submissions()
-            ->with(['user', 'answers.question'])
-            ->latest()
-            ->paginate(10);
+        $query = $report->submissions()->with(['user', 'answers.question']);
+
+        // Apply date filter if provided
+        if ($start = request('start_date')) {
+            $query->whereDate('created_at', '>=', $start);
+        }
+
+        if ($end = request('end_date')) {
+            $query->whereDate('created_at', '<=', $end);
+        }
+
+        $submissions = $query->latest()->paginate(10)->withQueryString();
 
         return view('reports.submissions', compact('report', 'submissions'));
     }

@@ -17,6 +17,7 @@ class ProgrammeAttendeeInfolist
                     ->time(),
                 TextEntry::make('name'),
                 TextEntry::make('phone_number'),
+                TextEntry::make('email'),
                 TextEntry::make('created_at')
                     ->dateTime(),
                 TextEntry::make('updated_at')

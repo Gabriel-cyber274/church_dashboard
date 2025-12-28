@@ -98,10 +98,6 @@ class DepositsRelationManager extends RelationManager
                             }),
                         // ->required(),
 
-                        Select::make('program_id')
-                            ->label('Program')
-                            ->options(\App\Models\Program::all()->pluck('name', 'id'))
-                            ->searchable(),
 
                         TextInput::make('amount')
                             ->required()
@@ -169,11 +165,6 @@ class DepositsRelationManager extends RelationManager
                                 return $member ? "{$member->first_name} {$member->last_name} ({$member->email}, {$member->phone_number})" : null;
                             }),
                         // ->required(),
-
-                        Select::make('program_id')
-                            ->label('Program')
-                            ->options(\App\Models\Program::all()->pluck('name', 'id'))
-                            ->searchable(),
 
                         TextInput::make('amount')
                             ->required()

@@ -43,7 +43,7 @@ Route::post('/paystack/initiate', [PublicContributionController::class, 'initiat
 Route::get('/paystack/callback', [PublicContributionController::class, 'handlePaystackCallback'])->name('paystack.callback');
 
 // Pledge routes
-// Route::post('/pledges', [PublicContributionController::class, 'store'])->name('pledges.store');
+Route::post('/pledges', [PublicContributionController::class, 'storePledge'])->name('pledges.store');
 
 
 

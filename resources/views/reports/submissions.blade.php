@@ -9,6 +9,25 @@
 
         <div class="card">
             <div class="card-body">
+                <div class="mb-3">
+                    <form method="GET" action="{{ route('reports.submissions', $report) }}" class="row g-2 align-items-end">
+                        <div class="col-auto">
+                            <label for="start_date" class="form-label">Start Date</label>
+                            <input type="date" name="start_date" id="start_date" value="{{ request('start_date') }}"
+                                class="form-control">
+                        </div>
+                        <div class="col-auto">
+                            <label for="end_date" class="form-label">End Date</label>
+                            <input type="date" name="end_date" id="end_date" value="{{ request('end_date') }}"
+                                class="form-control">
+                        </div>
+                        <div class="col-auto">
+                            <button type="submit" class="btn btn-primary">Filter</button>
+                            <a href="{{ route('reports.submissions', $report) }}" class="btn btn-secondary">Reset</a>
+                        </div>
+                    </form>
+                </div>
+
                 <table class="table table-striped">
                     <thead>
                         <tr>

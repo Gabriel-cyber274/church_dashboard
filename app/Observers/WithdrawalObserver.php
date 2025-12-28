@@ -35,7 +35,7 @@ class WithdrawalObserver
         if (auth()->check() && auth()->user()->hasAnyRole(['finance'])) {
             $adminEmail = config('app.admin_email');
             if ($adminEmail) {
-                Mail::to($adminEmail)->send(new WithdrawalUpdateNotification($withdrawal, 'created'));
+                Mail::to($adminEmail)->queue(new WithdrawalUpdateNotification($withdrawal, 'created'));
             }
         }
     }
@@ -78,7 +78,7 @@ class WithdrawalObserver
         if (auth()->check() && auth()->user()->hasAnyRole(['finance'])) {
             $adminEmail = config('app.admin_email');
             if ($adminEmail) {
-                Mail::to($adminEmail)->send(new WithdrawalUpdateNotification($withdrawal, 'updated', $this->originalAttributes));
+                Mail::to($adminEmail)->queue(new WithdrawalUpdateNotification($withdrawal, 'updated', $this->originalAttributes));
             }
         }
 
@@ -87,7 +87,7 @@ class WithdrawalObserver
             if ($withdrawal->isDirty('status') && in_array($withdrawal->status, ['approved', 'completed'])) {
                 $adminEmail = config('app.admin_email');
                 if ($adminEmail) {
-                    Mail::to($adminEmail)->send(new WithdrawalUpdateNotification($withdrawal, 'status_updated', $this->originalAttributes));
+                    Mail::to($adminEmail)->queue(new WithdrawalUpdateNotification($withdrawal, 'status_updated', $this->originalAttributes));
                 }
             }
         }
@@ -101,7 +101,7 @@ class WithdrawalObserver
         if (auth()->check() && auth()->user()->hasAnyRole(['finance'])) {
             $adminEmail = config('app.admin_email');
             if ($adminEmail) {
-                Mail::to($adminEmail)->send(new WithdrawalUpdateNotification($withdrawal, 'deleted'));
+                Mail::to($adminEmail)->queue(new WithdrawalUpdateNotification($withdrawal, 'deleted'));
             }
         }
     }

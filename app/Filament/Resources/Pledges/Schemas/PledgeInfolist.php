@@ -19,8 +19,10 @@ class PledgeInfolist
                 TextEntry::make('pledge_date')
                     ->date(),
                 TextEntry::make('status'),
+                TextEntry::make('note'),
                 TextEntry::make('name'),
                 TextEntry::make('phone_number'),
+                TextEntry::make('email'),
                 TextEntry::make('deleted_at')
                     ->dateTime(),
                 TextEntry::make('created_at')

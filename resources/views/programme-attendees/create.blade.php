@@ -25,6 +25,12 @@
                             </div>
                         @endif
 
+                        @if (session('error'))
+                            <div class="alert alert-danger">
+                                {{ session('error') }}
+                            </div>
+                        @endif
+
                         @if ($errors->any())
                             <div class="alert alert-danger">
                                 <ul class="mb-0">
@@ -34,6 +40,7 @@
                                 </ul>
                             </div>
                         @endif
+
 
                         <form method="POST" action="{{ route('programme-attendees.store', $program->id) }}">
                             @csrf
@@ -45,11 +52,18 @@
                                     value="{{ old('name') }}" required>
                             </div>
 
+                            <!-- Email -->
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" name="email"
+                                    value="{{ old('email') }}">
+                            </div>
+
                             <!-- Phone Number (required if no member_id) -->
                             <div class="mb-3">
-                                <label for="phone_number" class="form-label">Phone Number *</label>
+                                <label for="phone_number" class="form-label">Phone Number</label>
                                 <input type="tel" class="form-control" id="phone_number" name="phone_number"
-                                    value="{{ old('phone_number') }}" required>
+                                    value="{{ old('phone_number') }}">
                             </div>
 
                             <!-- Attendance Time -->

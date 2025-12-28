@@ -32,23 +32,84 @@ class ProgrammeAttendeeController extends Controller
      * @param  int  $programId
      * @return \Illuminate\Http\Response
      */
+    // public function store(Request $request, $programId)
+    // {
+    //     $validated = $request->validate([
+    //         'name' => 'required|string|max:255',
+    //         'email' => 'nullable|string',
+    //         'phone_number' => 'nullable|string|max:20',
+    //         'attendance_time' => 'required|date',
+    //     ]);
+
+    //     $member = Member::where('email', $validated['email'])
+    //         ->orWhere('phone_number', $validated['phone_number'] ?? null)
+    //         ->first();
+
+
+    //     ProgrammeAttendee::create([
+    //         'program_id'       => $programId,
+    //         'member_id'        => $member?->id, // null if not found
+    //         'name'            => $validated['name'],
+    //         'phone_number'    => $validated['phone_number'],
+    //         'email'    => $validated['email'],
+    //         'attendance_time' => Carbon::parse($validated['attendance_time'])
+    //             ->format('Y-m-d H:i:s'),
+    //     ]);
+
+    //     return redirect()
+    //         ->route('programme-attendees.create', $programId)
+    //         ->with('success', 'Attendee registered successfully!');
+    // }
+
     public function store(Request $request, $programId)
     {
+        // Validate input
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'phone_number' => 'required|string|max:20',
-            // 'attendance_time' => 'required|date_format:Y-m-d H:i:s',
+            'email' => 'nullable|email|max:255',
+            'phone_number' => 'nullable|string|max:20',
             'attendance_time' => 'required|date',
         ]);
 
-        $member = Member::where('phone_number', $validated['phone_number'])->first();
+        // Try to find an existing member
+        $member = null;
+        if (!empty($validated['email']) || !empty($validated['phone_number'])) {
+            $member = Member::where(function ($query) use ($validated) {
+                if (!empty($validated['email'])) {
+                    $query->where('email', $validated['email']);
+                }
+                if (!empty($validated['phone_number'])) {
+                    $query->orWhere('phone_number', $validated['phone_number']);
+                }
+            })->first();
+        }
 
+        // Check if this attendee is already registered
+        $existing = ProgrammeAttendee::where('program_id', $programId)
+            ->where(function ($q) use ($member, $validated) {
+                if ($member) {
+                    $q->where('member_id', $member->id);
+                } else {
+                    $q->where('name', $validated['name'])
+                        ->where('email', $validated['email'] ?? null);
+                }
+            })
+            ->first();
+
+        if ($existing) {
+            return redirect()
+                ->route('programme-attendees.create', $programId)
+                ->with('error', 'This attendee is already registered for this program.');
+        }
+
+        // Create the attendee
         ProgrammeAttendee::create([
             'program_id'       => $programId,
-            'member_id'        => $member?->id, // null if not found
-            'name'            => $member ? null : $validated['name'],
-            'phone_number'    => $member ? null : $validated['phone_number'],
-            'attendance_time' => Carbon::parse($validated['attendance_time'])
+            'member_id'        => $member?->id, // null if no member found
+            'name'             => $validated['name'],
+            'phone_number'     => $validated['phone_number'] ?? null,
+            'email'            => $validated['email'] ?? null,
+            'attendance_time'  => Carbon::parse($validated['attendance_time'])
                 ->format('Y-m-d H:i:s'),
         ]);
 

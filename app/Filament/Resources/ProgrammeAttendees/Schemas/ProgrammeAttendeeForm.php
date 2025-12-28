@@ -49,6 +49,8 @@ class ProgrammeAttendeeForm
                 TextInput::make('phone_number')
                     ->tel()
                     ->default(null),
+                TextInput::make('email')
+                    ->default(null),
             ]);
     }
 }

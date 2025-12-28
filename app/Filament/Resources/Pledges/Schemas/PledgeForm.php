@@ -9,6 +9,7 @@ use Filament\Schemas\Schema;
 use App\Models\Member;
 use App\Models\Program;
 use App\Models\Project;
+use Filament\Forms\Components\Textarea;
 
 class PledgeForm
 {
@@ -67,12 +68,16 @@ class PledgeForm
                     ->required()
                     ->default('pending'),
 
+                Textarea::make('note')->default(null),
 
                 TextInput::make('name')
                     ->default(null),
 
                 TextInput::make('phone_number')
                     ->tel()
+                    ->default(null),
+
+                TextInput::make('email')
                     ->default(null),
             ]);
     }

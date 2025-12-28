@@ -35,7 +35,7 @@ class TitheObserver
         if (auth()->check() && auth()->user()->hasAnyRole(['finance'])) {
             $adminEmail = config('app.admin_email');
             if ($adminEmail) {
-                Mail::to($adminEmail)->send(new TitheUpdateNotification($tithe, 'created'));
+                Mail::to($adminEmail)->queue(new TitheUpdateNotification($tithe, 'created'));
             }
         }
     }
@@ -71,7 +71,7 @@ class TitheObserver
         if (auth()->check() && auth()->user()->hasAnyRole(['finance'])) {
             $adminEmail = config('app.admin_email');
             if ($adminEmail) {
-                Mail::to($adminEmail)->send(new TitheUpdateNotification($tithe, 'updated', $this->originalAttributes));
+                Mail::to($adminEmail)->queue(new TitheUpdateNotification($tithe, 'updated', $this->originalAttributes));
             }
         }
     }
@@ -84,7 +84,7 @@ class TitheObserver
         if (auth()->check() && auth()->user()->hasAnyRole(['finance'])) {
             $adminEmail = config('app.admin_email');
             if ($adminEmail) {
-                Mail::to($adminEmail)->send(new TitheUpdateNotification($tithe, 'deleted'));
+                Mail::to($adminEmail)->queue(new TitheUpdateNotification($tithe, 'deleted'));
             }
         }
     }

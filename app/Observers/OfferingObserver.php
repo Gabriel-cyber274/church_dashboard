@@ -35,7 +35,7 @@ class OfferingObserver
         if (auth()->check() && auth()->user()->hasAnyRole(['finance'])) {
             $adminEmail = config('app.admin_email');
             if ($adminEmail) {
-                Mail::to($adminEmail)->send(new OfferingUpdateNotification($offering, 'created'));
+                Mail::to($adminEmail)->queue(new OfferingUpdateNotification($offering, 'created'));
             }
         }
     }
@@ -71,7 +71,7 @@ class OfferingObserver
         if (auth()->check() && auth()->user()->hasAnyRole(['finance'])) {
             $adminEmail = config('app.admin_email');
             if ($adminEmail) {
-                Mail::to($adminEmail)->send(new OfferingUpdateNotification($offering, 'updated', $this->originalAttributes));
+                Mail::to($adminEmail)->queue(new OfferingUpdateNotification($offering, 'updated', $this->originalAttributes));
             }
         }
     }
@@ -84,7 +84,7 @@ class OfferingObserver
         if (auth()->check() && auth()->user()->hasAnyRole(['finance'])) {
             $adminEmail = config('app.admin_email');
             if ($adminEmail) {
-                Mail::to($adminEmail)->send(new OfferingUpdateNotification($offering, 'deleted'));
+                Mail::to($adminEmail)->queue(new OfferingUpdateNotification($offering, 'deleted'));
             }
         }
     }

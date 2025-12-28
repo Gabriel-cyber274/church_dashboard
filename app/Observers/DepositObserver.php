@@ -30,7 +30,7 @@ class DepositObserver
         if (auth()->check() && auth()->user()->hasAnyRole(['finance'])) {
             $adminEmail = config('app.admin_email');
             if ($adminEmail) {
-                Mail::to($adminEmail)->send(new DepositUpdateNotification($deposit, 'created'));
+                Mail::to($adminEmail)->queue(new DepositUpdateNotification($deposit, 'created'));
             }
         }
     }
@@ -66,7 +66,16 @@ class DepositObserver
         if (auth()->check() && auth()->user()->hasAnyRole(['finance'])) {
             $adminEmail = config('app.admin_email');
             if ($adminEmail) {
-                Mail::to($adminEmail)->send(new DepositUpdateNotification($deposit, 'updated', $this->originalAttributes));
+                Mail::to($adminEmail)->queue(new DepositUpdateNotification($deposit, 'updated', $this->originalAttributes));
+            }
+        }
+
+        // Send email to member if super_admin sets deposit as completed
+        if (auth()->check() && auth()->user()->hasAnyRole(['super_admin'])) {
+            if ($deposit->isDirty('status') && $deposit->status === 'completed') {
+                if ($deposit->member && $deposit->member->email) {
+                    Mail::to($deposit->member->email)->queue(new \App\Mail\DepositCompletedMail($deposit));
+                }
             }
         }
     }
@@ -79,7 +88,7 @@ class DepositObserver
         if (auth()->check() && auth()->user()->hasAnyRole(['finance'])) {
             $adminEmail = config('app.admin_email');
             if ($adminEmail) {
-                Mail::to($adminEmail)->send(new DepositUpdateNotification($deposit, 'deleted'));
+                Mail::to($adminEmail)->queue(new DepositUpdateNotification($deposit, 'deleted'));
             }
         }
     }

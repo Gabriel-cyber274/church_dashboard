@@ -111,8 +111,11 @@
             <div class="col-lg-8">
 
                 <div class="card">
-                    <div class="card-header">
+                    <div class="card-header d-flex justify-content-between align-items-center">
                         <h4>Create New Member</h4>
+                        <button class="btn btn-outline-dark btn-sm" data-bs-toggle="modal" data-bs-target="#qrModal">
+                            QR Code
+                        </button>
                     </div>
 
                     <div class="card-body">
@@ -139,18 +142,21 @@
                             @csrf
 
                             <div class="row g-3">
+                                <!-- First Name -->
                                 <div class="col-md-6">
                                     <label class="required">First Name</label>
                                     <input type="text" class="form-control" name="first_name"
                                         value="{{ old('first_name') }}" required>
                                 </div>
 
+                                <!-- Last Name -->
                                 <div class="col-md-6">
                                     <label class="required">Last Name</label>
                                     <input type="text" class="form-control" name="last_name"
                                         value="{{ old('last_name') }}" required>
                                 </div>
 
+                                <!-- Email -->
                                 <div class="col-md-12">
                                     <label class="optional">Email Address</label>
                                     <input type="email" class="form-control" name="email"
@@ -158,12 +164,14 @@
                                     <small class="text-muted">Optional</small>
                                 </div>
 
+                                <!-- Date of Birth -->
                                 <div class="col-md-6">
                                     <label class="required">Date of Birth</label>
                                     <input type="date" class="form-control" name="date_of_birth"
                                         value="{{ old('date_of_birth') }}" required>
                                 </div>
 
+                                <!-- Phone Number -->
                                 <div class="col-md-6">
                                     <label class="optional">Phone Number</label>
                                     <input type="tel" class="form-control" name="phone_number"
@@ -171,11 +179,13 @@
                                     <small class="text-muted">Optional</small>
                                 </div>
 
+                                <!-- Address -->
                                 <div class="col-md-12">
                                     <label class="required">Address</label>
                                     <textarea class="form-control" rows="2" name="address" required>{{ old('address') }}</textarea>
                                 </div>
 
+                                <!-- Gender -->
                                 <div class="col-md-6">
                                     <label class="required">Gender</label>
                                     <select class="form-select" name="gender" required>
@@ -185,6 +195,7 @@
                                     </select>
                                 </div>
 
+                                <!-- Marital Status -->
                                 <div class="col-md-6">
                                     <label class="required">Marital Status</label>
                                     <select class="form-select" name="marital_status" required>
@@ -196,6 +207,7 @@
                                     </select>
                                 </div>
 
+                                <!-- Departments -->
                                 <div class="col-md-12">
                                     <label class="optional">Departments</label>
                                     <select class="form-select select2" name="departments[]" multiple>
@@ -222,10 +234,27 @@
         </div>
     </div>
 
+    <!-- QR Code Modal -->
+    <div class="modal fade" id="qrModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Page QR Code</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div id="qrcode" class="d-flex justify-content-center mb-3"></div>
+                    <button class="btn btn-success" onclick="downloadQRCode()">Download QR Code</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
 
     <script>
         $(function() {
@@ -234,6 +263,31 @@
                 width: '100%'
             });
         });
+
+        let qrGenerated = false;
+        const modal = document.getElementById('qrModal');
+
+        modal.addEventListener('shown.bs.modal', function() {
+            if (!qrGenerated) {
+                new QRCode(document.getElementById("qrcode"), {
+                    text: window.location.href,
+                    width: 220,
+                    height: 220,
+                });
+                qrGenerated = true;
+            }
+        });
+
+        function downloadQRCode() {
+            const qrCanvas = document.querySelector('#qrcode canvas');
+            if (!qrCanvas) return;
+
+            const qrImage = qrCanvas.toDataURL("image/png");
+            const link = document.createElement('a');
+            link.href = qrImage;
+            link.download = 'page-qrcode.png';
+            link.click();
+        }
     </script>
 </body>
 

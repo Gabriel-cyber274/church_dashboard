@@ -15,6 +15,7 @@ class ProgrammeAttendee extends Model
         'attendance_time',
         'name',
         'phone_number',
+        'email'
     ];
 
     public function program()

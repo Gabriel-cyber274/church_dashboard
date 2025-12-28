@@ -38,6 +38,9 @@ class ProgrammeAttendeesTable
                 TextColumn::make('phone_number')
                     ->label('Guest Phone') // Updated label since we only have guests
                     ->searchable(),
+                TextColumn::make('email')
+                    ->label('Guest Email') // Updated label since we only have guests
+                    ->searchable(),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

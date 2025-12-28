@@ -81,10 +81,6 @@ class WithdrawalsRelationManager extends RelationManager
                             ->default(fn() => $this->getOwnerRecord()->id)
                             ->hidden(),
 
-                        Select::make('project_id')
-                            ->label('Project')
-                            ->options(\App\Models\Project::all()->pluck('name', 'id'))
-                            ->searchable(),
 
                         TextInput::make('amount')
                             ->required()
@@ -131,10 +127,6 @@ class WithdrawalsRelationManager extends RelationManager
                     'finance',
                 ]))
                     ->form([
-                        Select::make('project_id')
-                            ->label('Project')
-                            ->options(\App\Models\Project::all()->pluck('name', 'id'))
-                            ->searchable(),
 
                         TextInput::make('amount')
                             ->required()

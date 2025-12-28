@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\PledgeNotification;
 use App\Models\Deposit;
 use App\Models\Member;
 use App\Models\Pledge;
@@ -25,6 +26,7 @@ class PublicContributionController extends Controller
     {
         $validated = $request->validate([
             'email' => 'required|email',
+            'name' => 'required|string',
             'phone_number' => 'required|string|max:20',
             'amount' => 'required|numeric|min:100',
             'type' => 'required|in:program,project',
@@ -39,6 +41,7 @@ class PublicContributionController extends Controller
                 'type' => $validated['type'],
                 'id' => $validated['id'],
                 'phone_number' => $validated['phone_number'],
+                'name' => $validated['name']
             ]
         );
 
@@ -51,14 +54,14 @@ class PublicContributionController extends Controller
         $reference = $request->query('reference');
 
         if (!$reference) {
-            return redirect()->route('contributions.index')
+            return redirect()->back()
                 ->with('error', 'Payment reference missing');
         }
 
         $response = $paystack->verifyTransaction($reference);
 
         if ($response['data']['status'] !== 'success') {
-            return redirect()->route('contributions.index')
+            return redirect()->back()
                 ->with('error', 'Payment failed');
         }
 
@@ -74,11 +77,20 @@ class PublicContributionController extends Controller
                 ->first();
 
             if (!$member) {
+                $fullName = trim($metadata['name'] ?? '');
+
+                $nameParts = preg_split('/\s+/', $fullName);
+
+                $firstName = $nameParts[0] ?? '';
+                $lastName  = count($nameParts) > 1
+                    ? implode(' ', array_slice($nameParts, 1))
+                    : '';
+
                 $member = Member::create([
                     'email' => $data['customer']['email'],
                     'phone_number' => $metadata['phone_number'] ?? null,
-                    'first_name' => 'Online',
-                    'last_name' => 'Donor',
+                    'first_name' => $firstName,
+                    'last_name' => $lastName,
                 ]);
             }
 
@@ -131,13 +143,18 @@ class PublicContributionController extends Controller
             // Create deposit
             $deposit = Deposit::create($depositData);
 
+
+            if ($deposit->member && $deposit->member->email) {
+                Mail::to($deposit->member->email)->queue(new \App\Mail\DepositCompletedMail($deposit));
+            }
+
             // Send email to admin
             $adminEmail = config('app.admin_email');
             if (!empty($adminEmail)) {
                 $logoPath = public_path('images/logo.png');
                 $logoUrl = asset('images/logo.png');
 
-                Mail::to($adminEmail)->send(new \App\Mail\DepositNotification([
+                Mail::to($adminEmail)->queue(new \App\Mail\DepositNotification([
                     'deposit' => $deposit,
                     'member' => $member,
                     'contributionItem' => $contributionItem,
@@ -160,7 +177,7 @@ class PublicContributionController extends Controller
             DB::rollBack();
             Log::error('Paystack callback error: ' . $e->getMessage());
 
-            return redirect()->route('contributions.index')
+            return redirect()->back()
                 ->with('error', 'Payment completed but saving failed.');
         }
     }
@@ -237,6 +254,129 @@ class PublicContributionController extends Controller
         return view('contributions.confirm-form', compact('type', 'id'));
     }
 
+
+    public function storePledge(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email',
+            'phone_number' => 'required|string|max:20',
+            'amount' => 'required|numeric|min:100',
+            'type' => 'required|in:program,project',
+            'id' => 'required|integer',
+            'note' => 'nullable|string',
+            'fulfillment_date' => 'required|date|after_or_equal:today',
+        ]);
+
+        Log::info('Pledge form submitted', [
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'phone_number' => $validated['phone_number'],
+            'amount' => $validated['amount'],
+            'type' => $validated['type'],
+            'id' => $validated['id'],
+            'fulfillment_date' => $validated['fulfillment_date'],
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            // Find or create member
+            $member = Member::where('email', $validated['email'])
+                ->orWhere('phone_number', $validated['phone_number'])
+                ->first();
+
+            Log::info('Member lookup result', [
+                'found' => $member ? 'yes' : 'no',
+                'member_id' => $member->id ?? null
+            ]);
+
+            if (!$member) {
+
+                $fullName = trim($validated['name'] ?? '');
+
+                $nameParts = preg_split('/\s+/', $fullName);
+
+                $firstName = $nameParts[0] ?? '';
+                $lastName  = count($nameParts) > 1
+                    ? implode(' ', array_slice($nameParts, 1))
+                    : '';
+                $member = Member::create([
+                    'email' => $validated['email'],
+                    'phone_number' => $validated['phone_number'],
+                    'first_name' => $firstName,
+                    'last_name' => $lastName,
+                ]);
+                Log::info('New member created', ['member_id' => $member->id]);
+            }
+
+            // Prepare pledge data
+            $pledgeData = [
+                'member_id' => $member->id,
+                'amount' => $validated['amount'],
+                'pledge_date' => Carbon::parse($validated['fulfillment_date']),
+                'status' => 'pending',
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'phone_number' => $validated['phone_number'],
+                'note' => $validated['note'] ?? null,
+            ];
+
+            $contributionItem = null;
+            $redirectRoute = route('contributions.index');
+
+            if ($validated['type'] === 'program') {
+                $pledgeData['program_id'] = $validated['id'];
+                $contributionItem = Program::find($validated['id']);
+                $redirectRoute = route('contributions.program.show', $validated['id']);
+                Log::info('Program pledge', ['program_id' => $validated['id']]);
+            } else {
+                $pledgeData['project_id'] = $validated['id'];
+                $contributionItem = Project::find($validated['id']);
+                $redirectRoute = route('contributions.project.show', $validated['id']);
+                Log::info('Project pledge', ['project_id' => $validated['id']]);
+            }
+
+            $pledge = Pledge::create($pledgeData);
+
+            Log::info('Pledge created successfully', [
+                'pledge_id' => $pledge->id,
+                'amount' => $pledge->amount,
+                'fulfillment_date' => $pledge->pledge_date
+            ]);
+
+            DB::commit();
+
+            $adminEmail = config('app.admin_email');
+
+            if ($adminEmail) {
+                Mail::to($adminEmail)->queue(new PledgeNotification([
+                    'pledge' => $pledge,
+                    'member' => $member,
+                    'itemName' => $contributionItem?->name,
+                    'logoPath' => public_path('images/logo.png'),
+                    'typeLabel' => ucfirst($validated['type']),
+                ]));
+            }
+
+            // ADD THIS RETURN STATEMENT
+            return redirect($redirectRoute)
+                ->with('success', 'Thank you! Your pledge has been recorded successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('Pledge creation failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'input' => $validated
+            ]);
+
+            return redirect()->back()
+                ->with('error', 'Unable to save pledge. Please try again.')
+                ->withInput();
+        }
+    }
+
     /**
      * Process confirmation with name and phone
      */
@@ -249,6 +389,7 @@ class PublicContributionController extends Controller
             'phone' => 'required|string|max:20',
             'amount' => 'required|numeric|min:1',
             'is_pledge' => 'nullable|boolean',
+            'email' => 'required|email|max:255',
         ]);
 
         $isPledge = $validated['is_pledge'] ?? false;
@@ -257,14 +398,29 @@ class PublicContributionController extends Controller
         DB::beginTransaction();
 
         try {
+
+            $fullName = trim($validated['name'] ?? '');
+
+            $nameParts = preg_split('/\s+/', $fullName);
+
+            $firstName = $nameParts[0] ?? '';
+            $lastName  = count($nameParts) > 1
+                ? implode(' ', array_slice($nameParts, 1))
+                : '';
             // Find or create member based on phone number
-            $member = Member::firstOrCreate(
-                ['phone_number' => $validated['phone']],
-                [
-                    'first_name' => $validated['name'], // Using name as first name
-                    'last_name' => '', // You might want to split name into first/last
-                ]
-            );
+            $member = Member::where('email', $validated['email'])
+                ->orWhere('phone_number', $validated['phone'])
+                ->first();
+
+            if (!$member) {
+                $member = Member::create([
+                    'email' => $validated['email'],
+                    'phone_number' => $validated['phone'],
+                    'first_name' => $firstName,
+                    'last_name' => $lastName,
+                ]);
+            }
+
 
             // Load the project/program for description
             $contributionItem = null;
@@ -299,6 +455,7 @@ class PublicContributionController extends Controller
                         'status' => 'pending',
                         'name' => $validated['name'],
                         'phone_number' => $validated['phone'],
+                        'email' => $validated['email'],
                     ];
 
                     if ($validated['type'] === 'project') {
@@ -422,7 +579,7 @@ class PublicContributionController extends Controller
             ];
 
             // Send email
-            Mail::to($adminEmail)->send(new \App\Mail\DepositNotification($mailData));
+            Mail::to($adminEmail)->queue(new \App\Mail\DepositNotification($mailData));
 
             Log::info('Deposit notification email sent to admin: ' . $adminEmail);
         } catch (\Exception $e) {

@@ -18,6 +18,15 @@ class Pledge extends Model
         'status',
         'name',
         'phone_number',
+        'note',
+        'email'
+    ];
+
+    protected $casts = [
+        'pledge_date' => 'date',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+        'deleted_at' => 'datetime',
     ];
 
     public function member()
