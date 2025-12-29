@@ -23,21 +23,21 @@ class DatabaseSeeder extends Seeder
         // ]);
 
         $this->call([
-            MemberSeeder::class,
+            // MemberSeeder::class,
             RoleSeeder::class,
             UserSeeder::class,
             DepartmentSeeder::class,
-            MemberDepartmentSeeder::class,
-            BankSeeder::class,
-            ProgramSeeder::class,
-            ProgramCoordinatorSeeder::class,
-            PledgeSeeder::class,
-            TitheSeeder::class,
-            OfferingSeeder::class,
-            DepositSeeder::class,
-            WithdrawalSeeder::class,
-            ProgrammeAttendeeSeeder::class,
-            ProjectSeeder::class,
+            // MemberDepartmentSeeder::class,
+            // BankSeeder::class,
+            // ProgramSeeder::class,
+            // ProgramCoordinatorSeeder::class,
+            // PledgeSeeder::class,
+            // TitheSeeder::class,
+            // OfferingSeeder::class,
+            // DepositSeeder::class,
+            // WithdrawalSeeder::class,
+            // ProgrammeAttendeeSeeder::class,
+            // ProjectSeeder::class,
         ]);
     }
 }
