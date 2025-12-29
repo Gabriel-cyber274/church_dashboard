@@ -22,6 +22,12 @@ class MemberForm
                     ->email()
                     ->default(null),
                 DatePicker::make('date_of_birth'),
+                TextInput::make('country')
+                    ->default(null),
+                TextInput::make('state')
+                    ->default(null),
+                TextInput::make('city')
+                    ->default(null),
                 TextInput::make('address')
                     ->default(null),
                 TextInput::make('phone_number')

@@ -179,6 +179,30 @@
                                     <small class="text-muted">Optional</small>
                                 </div>
 
+                                <!-- Country -->
+                                <div class="col-md-4">
+                                    <label class="required">Country</label>
+                                    <select class="form-select" id="country" name="country" required>
+                                        <option value="">Loading countries...</option>
+                                    </select>
+                                </div>
+
+                                <!-- State -->
+                                <div class="col-md-4" id="state-wrapper">
+                                    <label class="required">State</label>
+                                    <select class="form-select" id="state" name="state" disabled>
+                                        <option value="">Select country first</option>
+                                    </select>
+                                </div>
+
+                                <!-- City -->
+                                <div class="col-md-4" id="city-wrapper">
+                                    <label class="required">City</label>
+                                    <select class="form-select" id="city" name="city" disabled>
+                                        <option value="">Select state first</option>
+                                    </select>
+                                </div>
+
                                 <!-- Address -->
                                 <div class="col-md-12">
                                     <label class="required">Address</label>
@@ -217,7 +241,8 @@
                                             </option>
                                         @endforeach
                                     </select>
-                                    <small class="text-muted">Optional - you may select more than one department</small>
+                                    <small class="text-muted">Optional - you may select more than one
+                                        department</small>
                                 </div>
                             </div>
 
@@ -255,6 +280,101 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
+
+    <script>
+        const countryEl = document.getElementById('country');
+        const stateWrapper = document.getElementById('state-wrapper');
+        const cityWrapper = document.getElementById('city-wrapper');
+
+        /* Replace select with input */
+        function replaceWithInput(wrapper, name, label) {
+            wrapper.innerHTML = `
+        <label class="required">${label}</label>
+        <input type="text" class="form-control" name="${name}" required>
+    `;
+        }
+
+        /* Load countries */
+        fetch('https://countriesnow.space/api/v0.1/countries')
+            .then(res => res.json())
+            .then(res => {
+                countryEl.innerHTML = '<option value="">Select Country</option>';
+                res.data.forEach(c => {
+                    countryEl.innerHTML += `<option value="${c.country}">${c.country}</option>`;
+                });
+            });
+
+        /* Country → State */
+        countryEl.addEventListener('change', function() {
+            stateWrapper.innerHTML = `
+        <label class="required">State</label>
+        <select class="form-select" id="state" name="state"></select>
+    `;
+            cityWrapper.innerHTML = `
+        <label class="required">City</label>
+        <select class="form-select" id="city" name="city" disabled></select>
+    `;
+
+            if (!this.value) return;
+
+            const stateEl = document.getElementById('state');
+
+            fetch('https://countriesnow.space/api/v0.1/countries/states', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        country: this.value
+                    })
+                })
+                .then(res => res.json())
+                .then(res => {
+                    if (!res.data || res.data.states.length === 0) {
+                        replaceWithInput(stateWrapper, 'state', 'State');
+                        replaceWithInput(cityWrapper, 'city', 'City');
+                        return;
+                    }
+
+                    stateEl.innerHTML = '<option value="">Select State</option>';
+                    res.data.states.forEach(s => {
+                        stateEl.innerHTML += `<option value="${s.name}">${s.name}</option>`;
+                    });
+
+                    /* State → City */
+                    stateEl.addEventListener('change', function() {
+                        const cityEl = document.getElementById('city');
+                        cityEl.disabled = true;
+                        cityEl.innerHTML = '<option>Loading...</option>';
+
+                        fetch('https://countriesnow.space/api/v0.1/countries/state/cities', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    country: countryEl.value,
+                                    state: this.value
+                                })
+                            })
+                            .then(res => res.json())
+                            .then(res => {
+                                if (!res.data || res.data.length === 0) {
+                                    replaceWithInput(cityWrapper, 'city', 'City');
+                                    return;
+                                }
+
+                                cityEl.disabled = false;
+                                cityEl.innerHTML = '<option value="">Select City</option>';
+                                res.data.forEach(city => {
+                                    cityEl.innerHTML +=
+                                        `<option value="${city}">${city}</option>`;
+                                });
+                            });
+                    });
+                });
+        });
+    </script>
 
     <script>
         $(function() {

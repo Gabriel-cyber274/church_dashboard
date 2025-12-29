@@ -17,6 +17,9 @@ class MemberInfolist
                     ->label('Email address'),
                 TextEntry::make('date_of_birth')
                     ->date(),
+                TextEntry::make('country'),
+                TextEntry::make('state'),
+                TextEntry::make('city'),
                 TextEntry::make('address'),
                 TextEntry::make('phone_number'),
                 TextEntry::make('gender'),

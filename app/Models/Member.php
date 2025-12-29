@@ -27,6 +27,9 @@ class Member extends Model
         'phone_number',
         'gender',
         'marital_status',
+        'country',
+        'state',
+        'city'
     ];
 
 
