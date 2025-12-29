@@ -5,6 +5,7 @@ use App\Http\Controllers\ProgrammeAttendeeController;
 use App\Http\Controllers\PublicContributionController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ReportSubmissionController;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 
 // Route::get('/', function () {
@@ -75,4 +76,18 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/reports/{report}/submissions/{submission}/edit', [ReportSubmissionController::class, 'edit'])->name('submissions.edit');
     Route::put('/reports/{report}/submissions/{submission}', [ReportSubmissionController::class, 'update'])->name('submissions.update');
     Route::delete('/reports/{report}/submissions/{submission}', [ReportSubmissionController::class, 'destroy'])->name('submissions.destroy');
+});
+
+
+
+Route::get('/test-email', function () {
+    try {
+        Mail::raw('Test email from Laravel', function ($message) {
+            $message->to('gabrielimoh30@gmail.com')
+                ->subject('Test Email');
+        });
+        return 'Email sent successfully!';
+    } catch (\Exception $e) {
+        return 'Error: ' . $e->getMessage();
+    }
 });
