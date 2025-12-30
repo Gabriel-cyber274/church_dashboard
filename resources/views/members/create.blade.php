@@ -14,7 +14,7 @@
 
     <style>
         body {
-            background-color: #f4f6f9;
+            background-color: #353535;
             font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
         }
 
@@ -109,10 +109,14 @@
     <div class="container py-5">
         <div class="row justify-content-center">
             <div class="col-lg-8">
+                <div class="d-flex justify-content-center">
+                    <img src="{{ asset('images/logo.png') }}" height="100" alt="Church Logo" class="navbar-logo">
+                </div>
+
 
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <h4>Create New Member</h4>
+                        <h4>Register as a Member</h4>
                         <button class="btn btn-outline-dark btn-sm" data-bs-toggle="modal" data-bs-target="#qrModal">
                             QR Code
                         </button>
