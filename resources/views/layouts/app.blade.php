@@ -36,7 +36,7 @@
         }
 
         .navbar-logo {
-            height: 40px;
+            height: 80px;
             margin-right: 12px;
         }
 
