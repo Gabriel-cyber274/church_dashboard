@@ -185,7 +185,7 @@
 
                                 <!-- Country -->
                                 <div class="col-md-4">
-                                    <label class="required">Country</label>
+                                    <label class="required">Country of Residence</label>
                                     <select class="form-select" id="country" name="country" required>
                                         <option value="">Loading countries...</option>
                                     </select>
@@ -193,7 +193,7 @@
 
                                 <!-- State -->
                                 <div class="col-md-4" id="state-wrapper">
-                                    <label class="required">State</label>
+                                    <label class="required">State of Residence</label>
                                     <select class="form-select" id="state" name="state" disabled>
                                         <option value="">Select country first</option>
                                     </select>
@@ -201,7 +201,7 @@
 
                                 <!-- City -->
                                 <div class="col-md-4" id="city-wrapper">
-                                    <label class="required">City</label>
+                                    <label class="required">City of Residence</label>
                                     <select class="form-select" id="city" name="city" disabled>
                                         <option value="">Select state first</option>
                                     </select>
@@ -252,7 +252,7 @@
 
                             <div class="form-footer">
                                 <button type="reset" class="btn btn-light">Clear</button>
-                                <button type="submit" class="btn btn-primary px-4">Create Member</button>
+                                <button type="submit" class="btn btn-primary px-4">Submit</button>
                             </div>
                         </form>
 
