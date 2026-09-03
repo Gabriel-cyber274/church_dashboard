@@ -99,6 +99,12 @@
             color: inherit;
         }
 
+        /* Keep action buttons clickable above the card's stretched link */
+        .card-actions {
+            position: relative;
+            z-index: 2;
+        }
+
         .chat-wrap {
             background: #fff;
             border-radius: 12px;

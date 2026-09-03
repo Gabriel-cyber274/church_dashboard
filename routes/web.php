@@ -53,6 +53,8 @@ Route::post('/pledges', [PublicContributionController::class, 'storePledge'])->n
 Route::get('/questionaires', [QuestionaireController::class, 'index'])->name('questionaires.index');
 Route::post('/questionaires', [QuestionaireController::class, 'store'])->name('questionaires.store');
 Route::get('/questionaires/{questionaire}', [QuestionaireController::class, 'show'])->name('questionaires.show');
+Route::put('/questionaires/{questionaire}', [QuestionaireController::class, 'update'])->name('questionaires.update');
+Route::delete('/questionaires/{questionaire}', [QuestionaireController::class, 'destroy'])->name('questionaires.destroy');
 
 Route::get('/ask', [QuestionaireController::class, 'ask'])->name('questionaires.ask');
 Route::post('/ask', [QuestionaireController::class, 'lookup'])->name('questionaires.lookup');

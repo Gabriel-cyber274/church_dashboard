@@ -45,6 +45,32 @@ class QuestionaireController extends Controller
         ]);
     }
 
+    public function update(Request $request, QuestionaireProgramme $questionaire)
+    {
+        $validated = $request->validateWithBag('updateProgramme', [
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string|max:255',
+        ]);
+
+        $questionaire->update([
+            'name' => $validated['name'],
+            'description' => $validated['description'] ?? null,
+        ]);
+
+        return redirect()
+            ->route('questionaires.index')
+            ->with('success', 'Questionnaire updated successfully.');
+    }
+
+    public function destroy(QuestionaireProgramme $questionaire)
+    {
+        $questionaire->delete();
+
+        return redirect()
+            ->route('questionaires.index')
+            ->with('success', 'Questionnaire and its questions were deleted.');
+    }
+
     public function ask()
     {
         return view('questionaires.ask', ['programme' => null]);
