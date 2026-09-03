@@ -3,6 +3,7 @@
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\ProgrammeAttendeeController;
 use App\Http\Controllers\PublicContributionController;
+use App\Http\Controllers\QuestionaireController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ReportSubmissionController;
 use Illuminate\Support\Facades\Mail;
@@ -47,6 +48,16 @@ Route::get('/paystack/callback', [PublicContributionController::class, 'handlePa
 Route::post('/pledges', [PublicContributionController::class, 'storePledge'])->name('pledges.store');
 
 
+
+
+Route::get('/questionaires', [QuestionaireController::class, 'index'])->name('questionaires.index');
+Route::post('/questionaires', [QuestionaireController::class, 'store'])->name('questionaires.store');
+Route::get('/questionaires/{questionaire}', [QuestionaireController::class, 'show'])->name('questionaires.show');
+
+Route::get('/ask', [QuestionaireController::class, 'ask'])->name('questionaires.ask');
+Route::post('/ask', [QuestionaireController::class, 'lookup'])->name('questionaires.lookup');
+Route::get('/ask/{code}', [QuestionaireController::class, 'askShow'])->name('questionaires.ask.show');
+Route::post('/ask/{code}', [QuestionaireController::class, 'storeQuestion'])->name('questionaires.questions.store');
 
 
 Route::get('/members/create', [MemberController::class, 'create'])->name('members.create');
