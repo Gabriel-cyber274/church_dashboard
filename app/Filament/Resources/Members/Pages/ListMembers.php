@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Members\Pages;
 
+use App\Exports\MembersExport;
 use App\Filament\Resources\Members\MemberResource;
 use App\Mail\MemberNotification;
 use App\Models\Member;
@@ -16,6 +17,7 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Components\Utilities\Get;
 use Illuminate\Support\Facades\Mail;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ListMembers extends ListRecords
 {
@@ -138,6 +140,18 @@ class ListMembers extends ListRecords
             CreateAction::make()->visible(fn() => auth()->user()?->doesntHaveAnyRole([
                 'finance'
             ])),
+
+            Action::make('export')
+                ->label('Download Excel')
+                ->icon('heroicon-o-arrow-down-tray')
+                ->color('success')
+                ->action(
+                    fn() =>
+                    Excel::download(
+                        new MembersExport,
+                        'members.xlsx'
+                    )
+                ),
         ];
     }
 }
